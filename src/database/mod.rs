@@ -2,10 +2,10 @@ pub mod utils;
 use crate::models::utils::*;
 use futures::stream::StreamExt;
 use sqlx::sqlite::{SqliteConnectOptions, SqliteJournalMode, SqlitePool, SqliteRow};
-use std::{collections::HashMap, str::FromStr};
+use std::{collections::HashMap, ops::{Deref, DerefMut}, str::FromStr};
 use utils::*;
 
-pub struct SqliteRepository(pub SqlitePool);
+pub struct SqliteRepository(SqlitePool);
 
 impl SqliteRepository {
     pub async fn new(url: &str) -> Result<Self, RepositoryError> {
@@ -291,5 +291,18 @@ impl From<sqlx::Error> for RepositoryError {
             sqlx::Error::ColumnNotFound(e) => Self::ColumnNotFound(Some(e)),
             e => Self::Sqlx(e.to_string()),
         }
+    }
+}
+
+impl Deref for SqliteRepository {
+    type Target = SqlitePool;
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
+impl DerefMut for SqliteRepository {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.0
     }
 }
