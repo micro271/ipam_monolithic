@@ -4,7 +4,7 @@ use crate::{database::utils::Repository, models::utils::*};
 use bcrypt::{hash, verify, DEFAULT_COST};
 use jsonwebtoken::{decode, encode, Algorithm, DecodingKey, EncodingKey, Header, Validation};
 use serde::{Deserialize, Serialize};
-use sqlx::{postgres::PgRow, Row};
+use sqlx::{sqlite::SqliteRow, Row};
 
 #[derive(Deserialize, Serialize)]
 pub struct User {
@@ -81,8 +81,8 @@ pub async fn create_default_user(db: &impl Repository) -> Result<(), Error> {
     }
 }
 
-impl From<PgRow> for User {
-    fn from(value: PgRow) -> Self {
+impl From<SqliteRow> for User {
+    fn from(value: SqliteRow) -> Self {
         Self {
             id: value.get("id"),
             username: value.get("username"),

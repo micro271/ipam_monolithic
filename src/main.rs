@@ -9,7 +9,7 @@ use axum::{
     routing::{delete, get, post},
     serve, Router,
 };
-use database::PgRepository;
+use database::SqliteRepository;
 use dotenv::dotenv;
 use handler::*;
 use std::env;
@@ -27,18 +27,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let lst = tokio::net::TcpListener::bind(format!("{}:{}", ip, port)).await?;
 
-    let db_name = env::var("DB_NAME").expect("DB NAME DOESN'T DEFINED");
-    let db_user = env::var("DB_USER").expect("USER DATABASE DOESN'T DEFINED");
-    let db_pass = env::var("DB_PASSWD").expect("DB PASSWORD DOESN'T DEFINED");
-    let db_host = env::var("DB_HOST").expect("DB HOST DOESN'T DEFINED");
-    let db_port = env::var("DB_PORT").expect("DB PORT DOESN'T DEFINED");
+    let db_name = env::var("DB_NAME").unwrap_or("data".to_string());
 
-    let database_url = format!(
-        "postgres://{}:{}@{}:{}/{}",
-        db_user, db_pass, db_host, db_port, db_name
-    );
-
-    let db = PgRepository::new(database_url).await?;
+    let db = SqliteRepository::new(&format!("sqlite://{db_name}.db")).await?;
     user::create_default_user(&db).await?;
 
     let db = Arc::new(Mutex::new(db));

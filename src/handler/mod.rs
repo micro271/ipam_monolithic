@@ -3,7 +3,7 @@ pub mod error;
 mod models_data_entry;
 pub mod network;
 
-use crate::database::{utils::Repository, PgRepository};
+use crate::database::{utils::Repository, SqliteRepository};
 use crate::models::{utils::TypeTable, *};
 use crate::user::Role;
 use axum::{
@@ -17,7 +17,7 @@ use std::{collections::HashMap, sync::Arc};
 use tokio::sync::Mutex;
 use uuid::Uuid;
 
-type RepositoryType = Arc<Mutex<PgRepository>>;
+type RepositoryType = Arc<Mutex<SqliteRepository>>;
 
 pub mod auth {
     use super::*;
@@ -51,8 +51,9 @@ pub mod auth {
 
         let resp = state
             .get::<'_, user::User>(Some(HashMap::from([("username", user.username.into())])))
-            .await?.remove(0);
-        
+            .await?
+            .remove(0);
+
         match verify_pass(user.password.as_ref(), &resp.password) {
             Verify::Ok(true) => match create_token(&resp) {
                 Ok(e) => Ok(Json(json!({"token":e}))),

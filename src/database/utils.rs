@@ -1,6 +1,6 @@
 use super::Table;
 use crate::models::utils::{TypeTable, Updatable};
-use sqlx::postgres::PgRow;
+use sqlx::sqlite::SqliteRow;
 use std::{boxed::Box, collections::HashMap, future::Future, pin::Pin};
 
 pub type ResultRepository<'a, T> =
@@ -12,7 +12,7 @@ pub trait Repository {
         primary_key: Option<HashMap<&'a str, TypeTable>>,
     ) -> ResultRepository<'a, Vec<T>>
     where
-        T: Table + From<PgRow> + 'a + Send;
+        T: Table + From<SqliteRow> + 'a + Send;
     fn insert<'a, T>(&'a self, data: Vec<T>) -> ResultRepository<'a, QueryResult>
     where
         T: Table + 'a + Send;

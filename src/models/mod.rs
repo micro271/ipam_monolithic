@@ -2,7 +2,7 @@ pub mod utils;
 
 use ipnet::IpNet;
 use serde::{Deserialize, Serialize};
-use sqlx::{postgres::PgRow, Row};
+use sqlx::{sqlite::SqliteRow, Row};
 use std::{collections::HashMap, net::IpAddr};
 use uuid::Uuid;
 
@@ -85,16 +85,22 @@ impl Default for Status {
     }
 }
 
-impl From<PgRow> for Device {
-    fn from(value: PgRow) -> Self {
+impl From<SqliteRow> for Device {
+    fn from(value: SqliteRow) -> Self {
         Self {
             ip: value.get::<'_, &str, _>("ip").parse().unwrap(),
             description: value.get("description"),
             office_id: value.get("office_ids"),
             rack: value.get("rack"),
             credential: {
-                let cred: Option<(String, String)> = value.get("credential");
-                cred.map(|(username, password)| Credential { username, password })
+                let username: String = value.get("username");
+                let password: String = value.get("password");
+
+                if username.is_empty() && password.is_empty() {
+                    None
+                } else {
+                    Some(Credential { username, password })
+                }
             },
             room: value.get("room"),
             status: value.get("status"),
@@ -103,8 +109,8 @@ impl From<PgRow> for Device {
     }
 }
 
-impl From<PgRow> for Network {
-    fn from(value: PgRow) -> Self {
+impl From<SqliteRow> for Network {
+    fn from(value: SqliteRow) -> Self {
         Self {
             id: value.get("id"),
             description: value.get("description"),
@@ -117,11 +123,11 @@ impl From<PgRow> for Network {
     }
 }
 
-impl From<PgRow> for Office {
-    fn from(value: PgRow) -> Self {
+impl From<SqliteRow> for Office {
+    fn from(value: SqliteRow) -> Self {
         Self {
             id: value.get("id"),
-            name: value.get("description"),
+            name: value.get("name"),
             address: value.get("address"),
             description: value.get("description"),
         }

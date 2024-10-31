@@ -1,24 +1,24 @@
 pub mod utils;
 use crate::models::utils::*;
 use futures::stream::StreamExt;
-use sqlx::postgres::{PgPool, PgPoolOptions, PgRow};
-use std::collections::HashMap;
+use sqlx::sqlite::{SqliteConnectOptions, SqliteJournalMode, SqlitePool, SqliteRow};
+use std::{collections::HashMap, str::FromStr};
 use utils::*;
 
-pub struct PgRepository(pub PgPool);
+pub struct SqliteRepository(pub SqlitePool);
 
-impl PgRepository {
-    pub async fn new(url: String) -> Result<Self, RepositoryError> {
-        Ok(Self(
-            PgPoolOptions::new()
-                .max_connections(5)
-                .connect(&url)
-                .await?,
-        ))
+impl SqliteRepository {
+    pub async fn new(url: &str) -> Result<Self, RepositoryError> {
+        Ok(Self({
+            let tmp = SqliteConnectOptions::from_str(url)?
+                .journal_mode(SqliteJournalMode::Wal)
+                .read_only(false);
+            SqlitePool::connect_with(tmp).await?
+        }))
     }
 }
 
-impl Repository for PgRepository {
+impl Repository for SqliteRepository {
     fn insert<'a, T>(&'a self, data: Vec<T>) -> ResultRepository<'a, QueryResult>
     where
         T: Table + 'a + Send,
@@ -73,7 +73,7 @@ impl Repository for PgRepository {
         column_data: Option<HashMap<&'a str, TypeTable>>,
     ) -> ResultRepository<'a, Vec<T>>
     where
-        T: Table + From<PgRow> + 'a + Send,
+        T: Table + From<SqliteRow> + 'a + Send,
     {
         Box::pin(async {
             let mut query = format!("SELECT * FROM {}", T::name());

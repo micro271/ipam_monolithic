@@ -61,7 +61,6 @@ pub async fn update(
     let state = state.lock().await;
 
     if device.network_id.is_some() || device.ip.is_some() {
-
         let ip_to_delete: IpAddr;
 
         let netw_new = state
@@ -74,24 +73,26 @@ pub async fn update(
             )])))
             .await?
             .remove(0);
-    
+
         if let Some(ip) = device.ip {
-    
             if !netw_new.network.contains(&ip) {
                 return Err(ResponseError::StatusCode(StatusCode::BAD_REQUEST));
             }
             ip_to_delete = ip;
-            
         } else {
-
             if !netw_new.network.contains(&ip) {
                 return Err(ResponseError::StatusCode(StatusCode::CONFLICT));
             }
             ip_to_delete = ip;
         }
-        
-        state.delete::<Device>(Some(HashMap::from([("ip", ip_to_delete.into()), ("network_id", netw_new.id.into())]))).await?;
-    } 
+
+        state
+            .delete::<Device>(Some(HashMap::from([
+                ("ip", ip_to_delete.into()),
+                ("network_id", netw_new.id.into()),
+            ])))
+            .await?;
+    }
 
     Ok(state
         .update::<Device, _>(
