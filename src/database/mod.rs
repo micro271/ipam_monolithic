@@ -2,19 +2,18 @@ pub mod utils;
 use crate::models::utils::*;
 use futures::stream::StreamExt;
 use sqlx::sqlite::{SqliteConnectOptions, SqliteJournalMode, SqlitePool, SqliteRow};
-use std::{collections::HashMap, ops::{Deref, DerefMut}, str::FromStr};
+use std::{
+    collections::HashMap,
+    ops::{Deref, DerefMut},
+    str::FromStr,
+};
 use utils::*;
 
 pub struct SqliteRepository(SqlitePool);
 
 impl SqliteRepository {
     pub async fn new(url: &str) -> Result<Self, RepositoryError> {
-
         let mut create_tables = false;
-
-        if url.contains("/") {
-            panic!("Database name can't be one directory");
-        }
 
         let path_db = std::path::Path::new(url);
 
@@ -32,16 +31,45 @@ impl SqliteRepository {
 
         if create_tables {
             db.init_db().await?;
+            db.create_default_user().await?;
         }
 
         Ok(db)
-
     }
 
-    async fn init_db(&self) -> Result<(), RepositoryError>{
-        let query = include_str!("../../initdb.sql");        
+    async fn init_db(&self) -> Result<(), RepositoryError> {
+        let query = include_str!("../../initdb.sql");
         sqlx::query(query).execute(&self.0).await?;
         Ok(())
+    }
+
+    async fn create_default_user(&self) -> Result<(), RepositoryError> {
+        use crate::user::{encrypt, Role, User};
+
+        if self
+            .get::<User>(Some(HashMap::from([("role", Role::Admin.into())])))
+            .await
+            .is_ok()
+        {
+            return Ok(());
+        }
+
+        let user = User {
+            id: uuid::Uuid::new_v4(),
+            username: std::env::var("IPAM_USER_ROOT").unwrap_or("admin".into()),
+            password: encrypt(
+                std::env::var("IPAM_PASSWORD_ROOT")
+                    .unwrap_or("admin".into())
+                    .as_ref(),
+            )
+            .expect("Encrypt default user error"),
+            role: Role::Admin,
+        };
+
+        match self.insert::<User>(vec![user]).await {
+            Ok(_) => Ok(()),
+            Err(e) => Err(e),
+        }
     }
 }
 

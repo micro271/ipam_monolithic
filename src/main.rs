@@ -25,12 +25,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let lst = tokio::net::TcpListener::bind(format!("{}:{}", ip, port)).await?;
 
-    let db_name = env::var("DB_NAME").unwrap_or("data".to_string());
-    let db = SqliteRepository::new(&db_name).await?;
+    let db_name = env::var("DB_NAME").unwrap_or("./data.sqlite".to_string());
 
-    user::create_default_user(&db).await?;
-
-    let db = Arc::new(Mutex::new(db));
+    let db = Arc::new(Mutex::new(SqliteRepository::new(&db_name).await?));
     let network = Router::new()
         .route("/create", post(network::create))
         .route("/all", get(network::get_all)) // crate, update and get (all) networks

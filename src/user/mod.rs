@@ -1,6 +1,4 @@
-use std::collections::HashMap;
-
-use crate::{database::utils::Repository, models::utils::*};
+use crate::models::utils::*;
 use bcrypt::{hash, verify, DEFAULT_COST};
 use jsonwebtoken::{decode, encode, Algorithm, DecodingKey, EncodingKey, Header, Validation};
 use serde::{Deserialize, Serialize};
@@ -55,32 +53,6 @@ pub fn verify_token(token: &str) -> Result<Verify<Claims>, Error> {
     }
 }
 
-pub async fn create_default_user(db: &impl Repository) -> Result<(), Error> {
-    if db
-        .get::<User>(Some(HashMap::from([("role", Role::Admin.into())])))
-        .await
-        .is_ok()
-    {
-        return Ok(());
-    }
-
-    let user = User {
-        id: uuid::Uuid::new_v4(),
-        username: std::env::var("IPAM_USER_ROOT").unwrap_or("admin".into()),
-        password: encrypt(
-            std::env::var("IPAM_PASSWORD_ROOT")
-                .unwrap_or("admin".into())
-                .as_ref(),
-        )?,
-        role: Role::Admin,
-    };
-
-    match db.insert::<User>(vec![user]).await {
-        Ok(_) => Ok(()),
-        Err(_) => Err(Error::CreateDefaultUser),
-    }
-}
-
 impl From<SqliteRow> for User {
     fn from(value: SqliteRow) -> Self {
         Self {
@@ -111,7 +83,6 @@ pub enum Verify<T> {
 pub enum Error {
     Encrypt,
     EncodeToken,
-    CreateDefaultUser,
     SecretKey,
 }
 
@@ -121,7 +92,6 @@ impl std::fmt::Display for Error {
             Error::Encrypt => write!(f, "Encrypt Error"),
             Error::EncodeToken => write!(f, "Encode Token Error"),
             Error::SecretKey => write!(f, "Secret key not found"),
-            Error::CreateDefaultUser => write!(f, "Create user default error"),
         }
     }
 }
