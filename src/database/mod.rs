@@ -9,12 +9,39 @@ pub struct SqliteRepository(SqlitePool);
 
 impl SqliteRepository {
     pub async fn new(url: &str) -> Result<Self, RepositoryError> {
-        Ok(Self({
+
+        let mut create_tables = false;
+
+        if url.contains("/") {
+            panic!("Database name can't be one directory");
+        }
+
+        let path_db = std::path::Path::new(url);
+
+        if !path_db.exists() {
+            std::fs::File::create(path_db).expect("Database can't create");
+            create_tables = true;
+        }
+
+        let db = Self({
             let tmp = SqliteConnectOptions::from_str(url)?
                 .journal_mode(SqliteJournalMode::Wal)
                 .read_only(false);
             SqlitePool::connect_with(tmp).await?
-        }))
+        });
+
+        if create_tables {
+            db.init_db().await?;
+        }
+
+        Ok(db)
+
+    }
+
+    async fn init_db(&self) -> Result<(), RepositoryError>{
+        let query = include_str!("../../initdb.sql");        
+        sqlx::query(query).execute(&self.0).await?;
+        Ok(())
     }
 }
 

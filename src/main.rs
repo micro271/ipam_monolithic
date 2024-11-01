@@ -12,7 +12,7 @@ use axum::{
 use database::SqliteRepository;
 use dotenv::dotenv;
 use handler::*;
-use std::{env, path};
+use std::env;
 use std::sync::Arc;
 use tokio::sync::Mutex;
 
@@ -26,28 +26,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let lst = tokio::net::TcpListener::bind(format!("{}:{}", ip, port)).await?;
 
     let db_name = env::var("DB_NAME").unwrap_or("data".to_string());
-
-    if db_name.contains("/") {
-        return Err("Database file can't belong to a directory".into());
-    }
-    let path_db = format!("./{db_name}.db");
-
-    let flag_create_tables = !std::path::Path::new(&path_db).exists();
-
-    if flag_create_tables {
-        std::fs::File::create(std::path::Path::new(&path_db)).expect("Don't can't create the db file");
-    }
-
-    let db = SqliteRepository::new(&format!("sqlite://{db_name}.db")).await?;
-
-    if flag_create_tables {
-        let query = include_str!("../initdb.sql");
-        
-        sqlx::query(query).execute(&*db).await?;
-    }
+    let db = SqliteRepository::new(&db_name).await?;
 
     user::create_default_user(&db).await?;
-
 
     let db = Arc::new(Mutex::new(db));
     let network = Router::new()
