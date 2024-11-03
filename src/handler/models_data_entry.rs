@@ -21,10 +21,10 @@ pub struct User {
 pub struct Network {
     pub network: IpNet,
     pub description: Option<String>,
-    pub vlan: Option<models::Vlan>,
+    pub vlan: Option<models::network::Vlan>,
 }
 
-impl From<Network> for models::Network {
+impl From<Network> for models::network::Network {
     fn from(value: Network) -> Self {
         let avl = 2_u32.pow(32 - value.network.prefix_len() as u32) - 2;
         Self {

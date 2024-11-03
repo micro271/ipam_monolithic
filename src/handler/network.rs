@@ -1,4 +1,5 @@
 use super::*;
+use crate::models::network::*;
 
 pub async fn create(
     State(state): State<RepositoryType>,
