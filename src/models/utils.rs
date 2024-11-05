@@ -51,27 +51,29 @@ impl Table for Device {
 
 impl Table for Network {
     fn columns() -> Vec<&'static str> {
-        vec!["id", "network", "description", "available", "used", "total"]
+        vec!["id", "network", "available", "used", "total", "vlan", "description"]
     }
 
     fn name() -> String {
-        String::from("network")
+        String::from("networks")
     }
 
     fn query_insert() -> String {
         format!(
-            "INSERT INTO {} (network, available, used, total, vlan) VALUES ($1, $2, $3, $4, &5)",
+            "INSERT INTO {} (id, network, available, used, total, vlan, description) VALUES ($1, $2, $3, $4, $5, $6, $7)",
             Self::name()
         )
     }
 
     fn get_fields(self) -> Vec<TypeTable> {
         vec![
+            self.id.into(),
             self.network.into(),
             self.available.into(),
             self.used.into(),
             self.total.into(),
             self.vlan.into(),
+            self.description.into(),
         ]
     }
 }

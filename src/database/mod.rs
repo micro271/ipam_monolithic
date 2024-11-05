@@ -81,7 +81,7 @@ impl Repository for SqliteRepository {
         T: Table + 'a + Send,
     {
         let resp = async {
-            let mut tx = match self.0.begin().await {
+            let mut tx = match self.begin().await {
                 Ok(e) => e,
                 Err(e) => return Err(RepositoryError::Sqlx(e.to_string())),
             };
