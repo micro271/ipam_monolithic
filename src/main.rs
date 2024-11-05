@@ -6,7 +6,7 @@ mod services;
 use axum::{
     http::Response,
     middleware,
-    routing::{delete, get, post},
+    routing::{delete, get, post, put},
     serve, Router,
 };
 use database::SqliteRepository;
@@ -29,7 +29,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let db = Arc::new(Mutex::new(SqliteRepository::new(&db_name).await?));
     let network = Router::new()
-        .route("/create", post(network::create))
+        .route("/create", put(network::create))
         .route("/all", get(network::get_all)) // crate, update and get (all) networks
         .route(
             "/:id",
@@ -44,7 +44,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             "/all/:network_id",
             get(device::get_all)
                 .patch(device::update)
-                .post(device::create_all_devices),
+                .put(device::create_all_devices),
         ) // create, update and get all devices
         .route("/delete", delete(device::delete))
         .route("/one", get(device::get_one)); //get one device
