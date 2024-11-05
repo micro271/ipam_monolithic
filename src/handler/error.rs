@@ -1,4 +1,4 @@
-use crate::database::utils::RepositoryError;
+use crate::database::repository::RepositoryError;
 use axum::{
     http::{Response, StatusCode},
     response::IntoResponse,

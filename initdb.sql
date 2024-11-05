@@ -4,7 +4,8 @@ CREATE TABLE IF NOT EXISTS networks (
     available INTEGER NOT NULL,
     used INTEGER NOT NULL,
     total INTEGER NOT NULL,
-    vlan INTEGER
+    vlan INTEGER,
+    description TEXT,
 );
 
 CREATE TABLE IF NOT EXISTS offices (

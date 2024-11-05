@@ -1,5 +1,5 @@
 use crate::{
-    database::utils::QueryResult,
+    database::repository::QueryResult,
     models::{network, device},
 };
 use axum::{

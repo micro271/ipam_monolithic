@@ -3,7 +3,7 @@ pub mod error;
 mod models_data_entry;
 pub mod network;
 
-use crate::database::{utils::Repository, SqliteRepository};
+use crate::database::{repository::Repository, SqliteRepository};
 use crate::models::{utils::TypeTable, *, user::Role};
 use axum::{
     extract::{Extension, Json, Path, Query, State},

@@ -1,4 +1,4 @@
-pub mod utils;
+pub mod repository;
 pub mod convert;
 
 use futures::stream::StreamExt;
@@ -8,7 +8,7 @@ use std::{
     ops::{Deref, DerefMut},
     str::FromStr,
 };
-use utils::*;
+use repository::*;
 use crate::models::utils::*;
 
 pub struct SqliteRepository(SqlitePool);

@@ -38,11 +38,9 @@ pub struct Vlan(u16);
 
 impl Vlan {
     pub fn new(num: u16) -> Result<Self, VlanError> {
-        if num > 4096 {
-            Err(VlanError::InvalidVlan)
-        } else {
-            Ok(Self(num))
-        }
+        let mut tmp = Self(0);
+        tmp.set_vlan(num)?;
+        Ok(tmp)
     }
 
     pub fn set_vlan(&mut self, num: u16) -> Result<(), VlanError> {
