@@ -41,7 +41,7 @@ impl SqliteRepository {
 
     async fn init_db(&self) -> Result<(), RepositoryError> {
         let query = include_str!("../../initdb.sql");
-        sqlx::query(query).execute(&self.0).await?;
+        sqlx::query(query).execute(&self.0).await.expect("Error aquiaaaaaaa");
         Ok(())
     }
 
