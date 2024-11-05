@@ -1,19 +1,25 @@
 use sqlx::{sqlite::SqliteRow, Row};
 use crate::models::{device::*, network::{Network, Vlan}, user::*, office::Office};
-use uuid::Uuid;
 
 impl From<SqliteRow> for Device {
     fn from(value: SqliteRow) -> Self {
         Self {
             ip: value.get::<'_, &str, _>("ip").parse().unwrap(),
             description: value.get("description"),
-            office_id: value.get("office_ids"),
+            office_id: value.get("office_id"),
             rack: value.get("rack"),
-            credential: bincode::deserialize(value.get("credential")).unwrap(),
+            credential: {
+                let tmp: Option<Vec<u8>> = value.get("credential");
+                if let Some(aux) = tmp {
+                    Some(bincode::deserialize(&aux).unwrap())
+                } else {
+                    None
+                }
+            },
             room: value.get("room"),
             status: value.get("status"),
-            network_id: Uuid::parse_str(value.get("network_status")).unwrap(),
-        }
+            network_id: value.get("network_id"),
+        }   
     }
 }
 

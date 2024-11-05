@@ -2,11 +2,9 @@ pub mod repository;
 pub mod convert;
 
 use futures::stream::StreamExt;
-use sqlx::{sqlite::{SqliteConnectOptions, SqliteJournalMode, SqlitePool, SqliteRow}, Type};
+use sqlx::sqlite::{SqliteConnectOptions, SqliteJournalMode, SqlitePool, SqliteRow};
 use std::{
-    collections::HashMap,
-    ops::{Deref, DerefMut},
-    str::FromStr,
+    collections::HashMap, fmt::Debug, ops::{Deref, DerefMut}, str::FromStr
 };
 use repository::*;
 use crate::models::utils::*;
@@ -78,7 +76,7 @@ impl SqliteRepository {
 impl Repository for SqliteRepository {
     fn insert<'a, T>(&'a self, data: Vec<T>) -> ResultRepository<'a, QueryResult>
     where
-        T: Table + 'a + Send,
+        T: Table + 'a + Send + Debug,
     {
         let resp = async {
             let mut tx = match self.begin().await {
@@ -91,7 +89,7 @@ impl Repository for SqliteRepository {
                 let query = T::query_insert();
                 let mut tmp = sqlx::query(&query);
                 let data = T::get_fields(data);
-
+                println!("{data:?}");
                 for i in data {
                     tmp = match i {
                         TypeTable::String(s) => tmp.bind(s),
@@ -131,7 +129,7 @@ impl Repository for SqliteRepository {
         column_data: Option<HashMap<&'a str, TypeTable>>,
     ) -> ResultRepository<'a, Vec<T>>
     where
-        T: Table + From<SqliteRow> + 'a + Send,
+        T: Table + From<SqliteRow> + 'a + Send + Debug,
     {
         Box::pin(async {
             let mut query = format!("SELECT * FROM {}", T::name());
@@ -206,8 +204,8 @@ impl Repository for SqliteRepository {
         condition: Option<HashMap<&'a str, TypeTable>>,
     ) -> ResultRepository<'a, QueryResult>
     where
-        T: Table + 'a + Send,
-        U: Updatable<'a> + 'a + Send,
+        T: Table + 'a + Send + Debug,
+        U: Updatable<'a> + 'a + Send + Debug,
     {
         let tmp = async move {
             if let Some(pair) = updater.get_pair() {
@@ -282,7 +280,7 @@ impl Repository for SqliteRepository {
         condition: Option<HashMap<&'a str, TypeTable>>,
     ) -> ResultRepository<'a, QueryResult>
     where
-        T: Table + 'a + Send,
+        T: Table + 'a + Send + Debug,
     {
         let resp = async move {
             let mut query = format!("DELETE FROM {}", T::name());
