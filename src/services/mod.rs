@@ -49,7 +49,7 @@ pub fn verify_token(token: &str) -> Result<Verify<Claims>, Error> {
 impl From<&User> for Claims {
     fn from(value: &User) -> Self {
         Self {
-            exp: time::OffsetDateTime::now_utc().unix_timestamp() as usize,
+            exp: (time::OffsetDateTime::now_utc() + time::Duration::hours(6)).unix_timestamp() as usize,
             id: value.id,
             role: value.role.clone(),
         }
