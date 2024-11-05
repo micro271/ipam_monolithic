@@ -196,6 +196,13 @@ pub enum TypeTable {
     Role(user::Role),
     Float64(f64),
     OptionVlan(Option<i32>),
+    OptionCredential(Option<Vec<u8>>),
+}
+
+impl From<Option<Credential>> for TypeTable {
+    fn from(value: Option<Credential>) -> Self {
+        Self::OptionCredential(value.map(|x| bincode::serialize(&x).unwrap()))
+    }
 }
 
 impl From<Option<Vlan>> for TypeTable {

@@ -22,8 +22,7 @@ CREATE TABLE IF NOT EXISTS devices (
     room TEXT,
     status TEXT NOT NULL,
     network_id TEXT NOT NULL,
-    username TEXT,
-    password TEXT,
+    credential BLOB,
     PRIMARY KEY (ip, network_id),
     FOREIGN KEY (network_id) REFERENCES networks(id) ON DELETE CASCADE,
     FOREIGN KEY (office_id) REFERENCES offices(id) ON DELETE SET NULL

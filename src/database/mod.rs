@@ -2,7 +2,7 @@ pub mod repository;
 pub mod convert;
 
 use futures::stream::StreamExt;
-use sqlx::sqlite::{SqliteConnectOptions, SqliteJournalMode, SqlitePool, SqliteRow};
+use sqlx::{sqlite::{SqliteConnectOptions, SqliteJournalMode, SqlitePool, SqliteRow}, Type};
 use std::{
     collections::HashMap,
     ops::{Deref, DerefMut},
@@ -103,6 +103,7 @@ impl Repository for SqliteRepository {
                         TypeTable::Role(r) => tmp.bind(r),
                         TypeTable::Float64(f) => tmp.bind(f),
                         TypeTable::OptionUuid(e) => tmp.bind(e),
+                        TypeTable::OptionCredential(e) => tmp.bind(e),
                     };
                 }
 
@@ -171,6 +172,7 @@ impl Repository for SqliteRepository {
                             TypeTable::Int32(num) => resp.bind(num),
                             TypeTable::Role(role) => resp.bind(role),
                             TypeTable::Float64(f) => resp.bind(f),
+                            TypeTable::OptionCredential(e) => resp.bind(e),
                         };
                     }
 
@@ -260,6 +262,7 @@ impl Repository for SqliteRepository {
                         TypeTable::Float64(value) => sql.bind(value),
                         TypeTable::OptionUuid(e) => sql.bind(e),
                         TypeTable::OptionVlan(e) => sql.bind(e),
+                        TypeTable::OptionCredential(e) => sql.bind(e),
                     };
                 }
 
@@ -320,6 +323,7 @@ impl Repository for SqliteRepository {
                             TypeTable::Role(role) => ex.bind(role),
                             TypeTable::Float64(f) => ex.bind(f),
                             TypeTable::OptionVlan(e) => ex.bind(e),
+                            TypeTable::OptionCredential(e) => ex.bind(e),
                         };
                     }
 

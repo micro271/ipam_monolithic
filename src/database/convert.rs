@@ -9,16 +9,7 @@ impl From<SqliteRow> for Device {
             description: value.get("description"),
             office_id: value.get("office_ids"),
             rack: value.get("rack"),
-            credential: {
-                let username: String = value.get("username");
-                let password: String = value.get("password");
-
-                if username.is_empty() && password.is_empty() {
-                    None
-                } else {
-                    Some(Credential { username, password })
-                }
-            },
+            credential: bincode::deserialize(value.get("credential")).unwrap(),
             room: value.get("room"),
             status: value.get("status"),
             network_id: Uuid::parse_str(value.get("network_status")).unwrap(),
