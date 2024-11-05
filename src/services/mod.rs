@@ -1,16 +1,8 @@
-use crate::models::utils::*;
+use crate::models::{utils::*, user::*};
 use bcrypt::{hash, verify, DEFAULT_COST};
 use jsonwebtoken::{decode, encode, Algorithm, DecodingKey, EncodingKey, Header, Validation};
 use serde::{Deserialize, Serialize};
-use sqlx::{sqlite::SqliteRow, Row};
 
-#[derive(Deserialize, Serialize)]
-pub struct User {
-    pub id: uuid::Uuid,
-    pub username: String,
-    pub password: String,
-    pub role: Role,
-}
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Claims {
@@ -53,16 +45,6 @@ pub fn verify_token(token: &str) -> Result<Verify<Claims>, Error> {
     }
 }
 
-impl From<SqliteRow> for User {
-    fn from(value: SqliteRow) -> Self {
-        Self {
-            id: value.get("id"),
-            username: value.get("username"),
-            password: value.get("password"),
-            role: value.get("role"),
-        }
-    }
-}
 
 impl From<&User> for Claims {
     fn from(value: &User) -> Self {
@@ -116,12 +98,7 @@ impl From<bcrypt::BcryptError> for Error {
     }
 }
 
-#[derive(Deserialize, Serialize, sqlx::Type, Debug, Clone, PartialEq)]
-pub enum Role {
-    Admin,
-    Guest,
-    Operator,
-}
+
 
 impl Table for User {
     fn columns() -> Vec<&'static str> {

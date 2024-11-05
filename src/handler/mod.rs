@@ -4,8 +4,7 @@ mod models_data_entry;
 pub mod network;
 
 use crate::database::{utils::Repository, SqliteRepository};
-use crate::models::{utils::TypeTable, *};
-use crate::user::Role;
+use crate::models::{utils::TypeTable, *, user::Role};
 use axum::{
     extract::{Extension, Json, Path, Query, State},
     http::StatusCode,
@@ -17,11 +16,12 @@ use std::{collections::HashMap, sync::Arc};
 use tokio::sync::Mutex;
 use uuid::Uuid;
 
+
 type RepositoryType = Arc<Mutex<SqliteRepository>>;
 
 pub mod auth {
     use super::*;
-    use crate::user::{self, create_token, encrypt, verify_pass, Verify};
+    use crate::services::{self, create_token, encrypt, verify_pass, Verify};
     use axum::{extract::Request, middleware::Next, response::Response};
 
     pub async fn create(
@@ -65,9 +65,9 @@ pub mod auth {
 
     pub async fn verify_token(mut req: Request, next: Next) -> Result<Response, ResponseError> {
         match req.headers().get(axum::http::header::AUTHORIZATION) {
-            Some(e) => match e.to_str() {
+            Some(e) => match e.to_str() {    
                 Ok(e) => match e.split(' ').collect::<Vec<_>>().get(1) {
-                    Some(e) => match user::verify_token(e) {
+                    Some(e) => match services::verify_token(e) {
                         Ok(Verify::Ok(e)) => {
                             req.extensions_mut().insert(e.role);
                             Ok(next.run(req).await)

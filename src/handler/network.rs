@@ -49,7 +49,7 @@ pub async fn update(
         .update::<Network, _>(network, Some(HashMap::from([("id", id.into())])))
         .await?;
     match state
-        .delete::<Device>(Some(HashMap::from([("network_id", id.into())])))
+        .delete::<crate::models::device::Device>(Some(HashMap::from([("network_id", id.into())])))
         .await
     {
         Ok(e) => Ok(Json(json!({

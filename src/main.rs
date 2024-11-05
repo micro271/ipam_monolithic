@@ -1,7 +1,7 @@
 mod database;
 mod handler;
 mod models;
-mod user;
+mod services;
 
 use axum::{
     http::Response,

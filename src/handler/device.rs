@@ -1,5 +1,6 @@
 use super::*;
-use crate::models::network::*;
+use crate::models::{network::*, device::*};
+
 use std::net::IpAddr;
 
 pub async fn create(

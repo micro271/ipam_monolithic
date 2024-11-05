@@ -1,7 +1,8 @@
 use super::{network::*, *};
 use ipnet::IpNet;
-use std::{net::IpAddr, vec};
+use std::{{net::IpAddr, vec}, collections::HashMap};
 use uuid::Uuid;
+use super::device::*;
 
 pub trait Table {
     fn name() -> String;
@@ -75,7 +76,7 @@ impl Table for Network {
     }
 }
 
-impl Table for Office {
+impl Table for office::Office {
     fn name() -> String {
         String::from("offices")
     }
@@ -83,7 +84,7 @@ impl Table for Office {
     fn query_insert() -> String {
         format!(
             "INSERT INTO {} (id, description, address) VALUES ($1, $2, $3)",
-            Office::name()
+            office::Office::name()
         )
     }
 
@@ -168,7 +169,7 @@ impl<'a> Updatable<'a> for UpdateNetwork {
     }
 }
 
-impl<'a> Updatable<'a> for UpdateOffice {
+impl<'a> Updatable<'a> for office::UpdateOffice {
     fn get_pair(self) -> Option<HashMap<&'a str, TypeTable>> {
         let mut resp = HashMap::new();
         if let Some(tmp) = self.address {
@@ -188,9 +189,9 @@ pub enum TypeTable {
     OptionUuid(Option<Uuid>),
     Uuid(Uuid),
     OptionString(Option<String>),
-    Status(super::Status),
+    Status(device::Status),
     Int32(i32),
-    Role(crate::user::Role),
+    Role(user::Role),
     Float64(f64),
     OptionVlan(Option<i32>),
 }
@@ -207,8 +208,8 @@ impl From<Uuid> for TypeTable {
     }
 }
 
-impl From<crate::user::Role> for TypeTable {
-    fn from(value: crate::user::Role) -> Self {
+impl From<user::Role> for TypeTable {
+    fn from(value: user::Role) -> Self {
         Self::Role(value)
     }
 }
@@ -285,8 +286,8 @@ impl From<Option<String>> for TypeTable {
     }
 }
 
-impl From<super::Status> for TypeTable {
-    fn from(value: super::Status) -> Self {
+impl From<device::Status> for TypeTable {
+    fn from(value: device::Status) -> Self {
         Self::Status(value)
     }
 }

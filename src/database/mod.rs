@@ -1,5 +1,6 @@
 pub mod utils;
-use crate::models::utils::*;
+pub mod convert;
+
 use futures::stream::StreamExt;
 use sqlx::sqlite::{SqliteConnectOptions, SqliteJournalMode, SqlitePool, SqliteRow};
 use std::{
@@ -8,6 +9,7 @@ use std::{
     str::FromStr,
 };
 use utils::*;
+use crate::models::utils::*;
 
 pub struct SqliteRepository(SqlitePool);
 
@@ -44,7 +46,7 @@ impl SqliteRepository {
     }
 
     async fn create_default_user(&self) -> Result<(), RepositoryError> {
-        use crate::user::{encrypt, Role, User};
+        use crate::{services::encrypt, models::user::*};
 
         if self
             .get::<User>(Some(HashMap::from([("role", Role::Admin.into())])))
