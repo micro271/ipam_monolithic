@@ -186,7 +186,11 @@ impl Repository for SqliteRepository {
                     }
                 }
                 None => Ok({
-                    vec_resp.push(T::from(sqlx::query(&query).fetch_one(&self.0).await?));
+                    let mut fetch = sqlx::query(&query).fetch(&self.0);
+                    while let Some(Ok(tmp)) = fetch.next().await {
+                        vec_resp.push(tmp.into());
+                    }
+
                     vec_resp
                 }),
                 _ => Err(RepositoryError::ColumnNotFound(None)),
