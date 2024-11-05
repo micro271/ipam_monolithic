@@ -144,13 +144,16 @@ impl Repository for SqliteRepository {
                     let mut data_pos = HashMap::new();
 
                     let mut pos = 1;
+                    let len = col.len();
                     for i in col.keys() {
                         if !cols.contains(i) {
                             return Err(RepositoryError::ColumnNotFound(Some(i.to_string())));
                         }
 
                         query.push_str(&format!(" {} = ${}", i, pos));
-
+                        if pos < len {
+                            query.push_str(" AND");
+                        }
                         data_pos.insert(pos, col.get(i).unwrap());
                         pos += 1;
                     }
@@ -209,6 +212,7 @@ impl Repository for SqliteRepository {
                 let mut pos_values = HashMap::new();
 
                 let mut pos = 1;
+                let len = pair.len();
                 for i in pair.keys() {
                     if !cols.contains(i) {
                         return Err(RepositoryError::ColumnNotFound(Some(i.to_string())));
@@ -216,6 +220,9 @@ impl Repository for SqliteRepository {
 
                     query.push_str(&format!(" {} = ${}", i, pos));
                     pos_values.insert(pos, pair.get(i).unwrap());
+                    if len > pos {
+                        query.push(',');
+                    }
                     pos += 1
                 }
 
@@ -227,9 +234,13 @@ impl Repository for SqliteRepository {
                     None => HashMap::new(),
                 };
 
+                let len = condition.len() + pos - 1;
                 for i in condition.keys() {
                     pos_values.insert(pos, condition.get(i).unwrap());
                     query.push_str(&format!(" {} = ${}", i, pos));
+                    if pos < len {
+                        query.push_str(" AND");
+                    }
                     pos += 1;
                 }
 
@@ -278,6 +289,7 @@ impl Repository for SqliteRepository {
                     let mut pos_column = HashMap::new();
                     let mut pos = 1;
 
+                    let len = condition.len();
                     for t in condition.keys() {
                         if !columns.contains(t) {
                             return Err(RepositoryError::ColumnNotFound(Some(t.to_string())));
@@ -285,6 +297,9 @@ impl Repository for SqliteRepository {
 
                         query.push_str(&format!(" {} = ${}", t, pos));
                         pos_column.insert(pos, condition.get(t).unwrap());
+                        if pos < len {
+                            query.push_str(" AND");
+                        }
                         pos += 1;
                     }
 
