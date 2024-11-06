@@ -69,6 +69,6 @@ async fn hello_world() -> Response<String> {
     Response::builder()
         .status(200)
         .header("Content-Type", "text/html")
-        .body("<h1>Bienvenido</h1>".to_string())
+        .body("<h1>Welcome</h1>".to_string())
         .unwrap_or_default()
 }
