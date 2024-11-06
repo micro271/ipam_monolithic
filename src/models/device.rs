@@ -7,9 +7,8 @@ pub struct UpdateDevice {
     pub ip: Option<IpAddr>,
     pub description: Option<String>,
     pub office_id: Option<Uuid>,
-    pub rack: Option<Option<String>>,
-    pub room: Option<Option<String>>,
-    pub status: Option<Status>,
+    pub rack: Option<String>,
+    pub room: Option<String>,
     pub network_id: Option<Uuid>,
     pub credential: Option<Credential>,
 }

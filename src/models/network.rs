@@ -5,9 +5,6 @@ use serde::{Deserialize, Serialize};
 pub struct UpdateNetwork {
     pub network: Option<IpNet>,
     pub description: Option<String>,
-    pub available: Option<u32>,
-    pub used: Option<u32>,
-    pub total: Option<u32>,
 }
 
 #[derive(Debug, Deserialize, Serialize)]

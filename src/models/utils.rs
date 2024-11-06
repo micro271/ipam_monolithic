@@ -110,7 +110,13 @@ impl<'a> Updatable<'a> for UpdateDevice {
         }
 
         if let Some(tmp) = self.description {
-            pair.insert("description", tmp.into());
+            let data = if tmp.is_empty() {
+                None
+            } else {
+                Some(tmp)
+            };
+
+            pair.insert("description", data.into());
         }
 
         if let Some(tmp) = self.network_id {
@@ -118,19 +124,40 @@ impl<'a> Updatable<'a> for UpdateDevice {
         }
 
         if let Some(tmp) = self.office_id {
+            let tmp = if tmp == uuid::Uuid::nil() {
+                None
+            } else {
+                Some(tmp)
+            };
             pair.insert("office_id", tmp.into());
         }
 
         if let Some(tmp) = self.rack {
+            let tmp = if tmp.is_empty() {
+                None
+            } else {
+                Some(tmp)
+            };
             pair.insert("rack", tmp.into());
         }
 
         if let Some(tmp) = self.room {
+            let tmp = if tmp.is_empty() {
+                None
+            } else {
+                Some(tmp)
+            };
             pair.insert("room", tmp.into());
         }
 
-        if let Some(tmp) = self.status {
-            pair.insert("status", tmp.into());
+        if let Some(cred) = self.credential {
+            let tmp = if cred.password.is_empty() && cred.username.is_empty() {
+                None
+            } else {
+                Some(cred)
+            };
+
+            pair.insert("credential", tmp.into());
         }
 
         if !pair.is_empty() {
@@ -146,23 +173,16 @@ impl<'a> Updatable<'a> for UpdateNetwork {
         let mut pair = HashMap::new();
 
         if let Some(tmp) = self.description {
+            let tmp = if tmp.is_empty() {
+                None
+            } else {
+                Some(tmp)
+            };
             pair.insert("description", tmp.into());
         }
 
         if let Some(tmp) = self.network {
             pair.insert("network", tmp.into());
-        }
-
-        if let Some(tmp) = self.available {
-            pair.insert("available", tmp.into());
-        }
-
-        if let Some(tmp) = self.used {
-            pair.insert("used", tmp.into());
-        }
-
-        if let Some(tmp) = self.total {
-            pair.insert("total", tmp.into());
         }
 
         if !pair.is_empty() {
