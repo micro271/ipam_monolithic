@@ -134,7 +134,8 @@ impl Repository for SqliteRepository {
         Box::pin(async {
             let mut query = format!("SELECT * FROM {}", T::name());
             let mut vec_resp = Vec::new();
-
+            
+            println!("{:?}", &column_data);
             match column_data {
                 Some(col) if !col.is_empty() => {
                     let cols = T::columns();
@@ -156,7 +157,7 @@ impl Repository for SqliteRepository {
                         data_pos.insert(pos, col.get(i).unwrap());
                         pos += 1;
                     }
-
+                    println!("{:?}",query);
                     let mut resp = sqlx::query(&query);
 
                     for i in 1..pos {

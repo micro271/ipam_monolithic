@@ -6,7 +6,7 @@ pub mod auth;
 mod query_params;
 
 use crate::database::{repository::Repository, SqliteRepository};
-use crate::models::{utils::TypeTable, *, user::Role};
+use crate::models::{*, user::Role};
 use axum::{
     extract::{Extension, Json, Path, Query, State},
     http::StatusCode,

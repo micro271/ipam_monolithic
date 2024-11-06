@@ -11,6 +11,7 @@ pub struct UpdateDevice {
     pub room: Option<Option<String>>,
     pub status: Option<Status>,
     pub network_id: Option<Uuid>,
+    pub credential: Option<Credential>,
 }
 
 #[derive(Deserialize, Serialize, Debug)]

@@ -54,7 +54,7 @@ pub async fn get_all(
 pub async fn update(
     State(state): State<RepositoryType>,
     Extension(role): Extension<Role>,
-    Query((ip, network_id)): Query<(IpAddr, Uuid)>,
+    Query(query_params::ParamDevice{ip, network_id}): Query<query_params::ParamDevice>,
     Json(device): Json<UpdateDevice>,
 ) -> Result<impl IntoResponse, ResponseError> {
     if role != Role::Admin {
@@ -115,8 +115,8 @@ pub async fn get_one(
 
     let device = state
         .get::<Device>(Some(HashMap::from([
-            ("ip", TypeTable::String(ip.to_string())),
-            ("network_id", TypeTable::String(network_id.to_string())),
+            ("ip", ip.into()),
+            ("network_id", network_id.into()),
         ])))
         .await?;
 
