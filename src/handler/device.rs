@@ -109,7 +109,7 @@ pub async fn update(
 
 pub async fn get_one(
     State(state): State<RepositoryType>,
-    Query((ip, network_id)): Query<(IpAddr, Uuid)>,
+    Query(query_params::ParamDevice{ip, network_id}): Query<query_params::ParamDevice>,
 ) -> Result<impl IntoResponse, ResponseError> {
     let state = state.lock().await;
 
