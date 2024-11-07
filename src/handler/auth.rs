@@ -2,7 +2,7 @@ use crate::services::Claims;
 
 use super::*;
 use axum::{extract::Request, middleware::Next, response::Response};
-use ipam_rs::authentication::{self, create_token, encrypt, verify_passwd, Verify};
+use ipam_rs::authentication::{self, create_token, encrypt, verify_passwd};
 
 pub async fn create(
     State(state): State<RepositoryType>,
@@ -34,12 +34,13 @@ pub async fn login(
         .await?
         .remove(0);
 
-    match verify_passwd(user.password, &resp.password) {
-        Verify::Ok(true) => match create_token(Claims::from(resp)) {
+    if verify_passwd(user.password, &resp.password) {
+        match create_token(Claims::from(resp)) {
             Ok(e) => Ok(Json(json!({"token":e}))),
             Err(_) => Err(ResponseError::ServerError),
-        },
-        _ => Err(ResponseError::Unauthorized),
+        }
+    } else {
+        Err(ResponseError::Unauthorized)
     }
 }
 
@@ -48,7 +49,7 @@ pub async fn verify_token(mut req: Request, next: Next) -> Result<Response, Resp
         Some(e) => match e.to_str() {
             Ok(e) => match e.split(' ').collect::<Vec<_>>().get(1) {
                 Some(e) => match authentication::verify_token::<Claims, _>(*e) {
-                    Ok(Verify::Ok(e)) => {
+                    Ok(e) => {
                         req.extensions_mut().insert(e.role);
                         Ok(next.run(req).await)
                     }

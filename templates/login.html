@@ -6,6 +6,23 @@
     <title>Welocme</title>
 </head>
 <body>
-    
+    <section id="login">
+        <label for="username">Username:</label>
+        <input type="text" id="username" placeholder="User name">
+
+        <label for="pass">Passworrd: </label>
+        <input type="password" id="pass" placeholder="password">
+
+        <button onclick="login()">Login</button>
+    </section>
+
+    <script>
+        async function login(event) {
+            
+            let get = await fetch("http://localhost:3000/login");
+            let token = await get.json();
+            console.log(token);
+        }
+    </script>
 </body>
 </html>

@@ -4,4 +4,4 @@ Cargo.lock
 *.db
 *wal
 *shm
-*.sqlite
+*.sqlite*

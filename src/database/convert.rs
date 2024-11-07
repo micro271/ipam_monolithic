@@ -13,7 +13,9 @@ impl From<SqliteRow> for Device {
             description: value.get("description"),
             office_id: value.get("office_id"),
             rack: value.get("rack"),
-            credential: value.get::<'_, Option<Vec<u8>>,_>("credential").map(|x| bincode::deserialize::<'_, Credential>(&x).unwrap()),
+            credential: value
+                .get::<'_, Option<Vec<u8>>, _>("credential")
+                .map(|x| bincode::deserialize::<'_, Credential>(&x).unwrap()),
             room: value.get("room"),
             status: value.get("status"),
             network_id: value.get("network_id"),
