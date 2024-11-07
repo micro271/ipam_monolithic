@@ -50,7 +50,8 @@ impl SqliteRepository {
     }
 
     async fn create_default_user(&self) -> Result<(), RepositoryError> {
-        use crate::{models::user::*, services::encrypt};
+        use crate::models::user::*;
+        use ipam_rs::authentication::encrypt;
 
         if self
             .get::<User>(Some(HashMap::from([("role", Role::Admin.into())])))
@@ -63,12 +64,8 @@ impl SqliteRepository {
         let user = User {
             id: uuid::Uuid::new_v4(),
             username: std::env::var("IPAM_USER_ROOT").unwrap_or("admin".into()),
-            password: encrypt(
-                std::env::var("IPAM_PASSWORD_ROOT")
-                    .unwrap_or("admin".into())
-                    .as_ref(),
-            )
-            .expect("Encrypt default user error"),
+            password: encrypt(std::env::var("IPAM_PASSWORD_ROOT").unwrap_or("admin".into()))
+                .expect("Encrypt default user error"),
             role: Role::Admin,
         };
 
@@ -95,7 +92,7 @@ impl Repository for SqliteRepository {
                 let query = T::query_insert();
                 let mut tmp = sqlx::query(&query);
                 let data = T::get_fields(data);
-                println!("{data:?}");
+
                 for i in data {
                     tmp = match i {
                         TypeTable::String(s) => tmp.bind(s),
@@ -141,7 +138,6 @@ impl Repository for SqliteRepository {
             let mut query = format!("SELECT * FROM {}", T::name());
             let mut vec_resp = Vec::new();
 
-            println!("{:?}", &column_data);
             match column_data {
                 Some(col) if !col.is_empty() => {
                     let cols = T::columns();
@@ -163,7 +159,7 @@ impl Repository for SqliteRepository {
                         data_pos.insert(pos, col.get(i).unwrap());
                         pos += 1;
                     }
-                    println!("{:?}", query);
+
                     let mut resp = sqlx::query(&query);
 
                     for i in 1..pos {

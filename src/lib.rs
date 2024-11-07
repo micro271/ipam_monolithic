@@ -27,7 +27,7 @@ where
                     for i in tmp {
                         let cookie: Vec<_> = i.split("=").collect();
                         if let (Some(Ok(cookie::Cookie::TOKEN)), Some(value)) = (
-                            cookie.get(0).map(|x| cookie::Cookie::try_from(*x)),
+                            cookie.first().map(|x| cookie::Cookie::try_from(*x)),
                             cookie.get(1),
                         ) {
                             return Ok(Self(value.to_string()));
@@ -62,7 +62,7 @@ where
                     for i in key_value {
                         let tmp: Vec<_> = i.split('=').collect();
                         if let (Some(Ok(self::cookie::Cookie::THEME)), Some(value)) = (
-                            tmp.get(0).map(|x| self::cookie::Cookie::try_from(*x)),
+                            tmp.first().map(|x| self::cookie::Cookie::try_from(*x)),
                             tmp.get(1),
                         ) {
                             return Ok(Self(match self::theme::Theme::try_from(*value) {
@@ -159,17 +159,17 @@ pub mod error {
     pub struct ParseError;
 }
 
-mod auth {
+pub mod authentication {
     use bcrypt::{hash, verify, DEFAULT_COST};
     use jsonwebtoken::{decode, encode, Algorithm, DecodingKey, EncodingKey, Header, Validation};
     use serde::{de::DeserializeOwned, Serialize};
     use std::sync::LazyLock;
 
-    static ALGORITHM_JWT: LazyLock<Algorithm> = LazyLock::new(|| Algorithm::ES256);
+    static ALGORITHM_JWT: LazyLock<Algorithm> = LazyLock::new(|| Algorithm::HS256);
 
-    pub trait Claim {}
+    pub trait Claim: std::fmt::Debug {}
 
-    pub fn verify_pass<T: AsRef<[u8]>>(pass: T, pass_db: &str) -> Verify<bool> {
+    pub fn verify_passwd<T: AsRef<[u8]>>(pass: T, pass_db: &str) -> Verify<bool> {
         match verify(pass.as_ref(), pass_db) {
             Ok(true) => Verify::Ok(true),
             _ => Verify::Unauthorized,
@@ -180,15 +180,15 @@ mod auth {
         Ok(hash(pass.as_ref(), DEFAULT_COST)?)
     }
 
-    pub fn create_token<T>(user: T) -> Result<String, error::Error>
+    pub fn create_token<T>(claim: T) -> Result<String, error::Error>
     where
         T: Serialize + Claim,
     {
         let secret = std::env::var("SECRET_KEY")?;
-
+        
         Ok(encode(
             &Header::new(*ALGORITHM_JWT),
-            &user,
+            &claim,
             &EncodingKey::from_secret(secret.as_ref()),
         )?)
     }

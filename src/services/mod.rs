@@ -1,4 +1,4 @@
-use crate::models::{utils::*, user::*};
+use crate::models::{user::*, utils::*};
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -8,12 +8,15 @@ pub struct Claims {
     pub role: Role,
 }
 
-impl From<&User> for Claims {
-    fn from(value: &User) -> Self {
+impl ipam_rs::authentication::Claim for Claims {}
+
+impl From<User> for Claims {
+    fn from(value: User) -> Self {
         Self {
-            exp: (time::OffsetDateTime::now_utc() + time::Duration::hours(6)).unix_timestamp() as usize,
+            exp: (time::OffsetDateTime::now_utc() + time::Duration::hours(6)).unix_timestamp()
+                as usize,
             id: value.id,
-            role: value.role.clone(),
+            role: value.role,
         }
     }
 }

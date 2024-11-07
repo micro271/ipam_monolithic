@@ -1,6 +1,8 @@
+use crate::services::Claims;
+
 use super::*;
-use crate::services::{self, create_token, encrypt, verify_pass, Verify};
 use axum::{extract::Request, middleware::Next, response::Response};
+use ipam_rs::authentication::{self, create_token, encrypt, verify_passwd, Verify};
 
 pub async fn create(
     State(state): State<RepositoryType>,
@@ -13,7 +15,7 @@ pub async fn create(
 
     let state = state.lock().await;
 
-    user.password = match encrypt(user.password.as_ref()) {
+    user.password = match encrypt(user.password) {
         Ok(e) => e,
         Err(_) => return Err(ResponseError::ServerError),
     };
@@ -32,8 +34,8 @@ pub async fn login(
         .await?
         .remove(0);
 
-    match verify_pass(user.password.as_ref(), &resp.password) {
-        Verify::Ok(true) => match create_token(&resp) {
+    match verify_passwd(user.password, &resp.password) {
+        Verify::Ok(true) => match create_token(Claims::from(resp)) {
             Ok(e) => Ok(Json(json!({"token":e}))),
             Err(_) => Err(ResponseError::ServerError),
         },
@@ -45,7 +47,7 @@ pub async fn verify_token(mut req: Request, next: Next) -> Result<Response, Resp
     match req.headers().get(axum::http::header::AUTHORIZATION) {
         Some(e) => match e.to_str() {
             Ok(e) => match e.split(' ').collect::<Vec<_>>().get(1) {
-                Some(e) => match services::verify_token(e) {
+                Some(e) => match authentication::verify_token::<Claims, _>(*e) {
                     Ok(Verify::Ok(e)) => {
                         req.extensions_mut().insert(e.role);
                         Ok(next.run(req).await)
