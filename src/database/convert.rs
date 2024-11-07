@@ -1,5 +1,10 @@
+use crate::models::{
+    device::*,
+    network::{Network, Vlan},
+    office::Office,
+    user::*,
+};
 use sqlx::{sqlite::SqliteRow, Row};
-use crate::models::{device::*, network::{Network, Vlan}, user::*, office::Office};
 
 impl From<SqliteRow> for Device {
     fn from(value: SqliteRow) -> Self {
@@ -19,7 +24,7 @@ impl From<SqliteRow> for Device {
             room: value.get("room"),
             status: value.get("status"),
             network_id: value.get("network_id"),
-        }   
+        }
     }
 }
 

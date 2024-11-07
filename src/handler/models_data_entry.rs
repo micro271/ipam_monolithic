@@ -1,6 +1,6 @@
 use crate::{
     database::repository::QueryResult,
-    models::{network, device},
+    models::{device, network},
 };
 use axum::{
     http::{self, Response, StatusCode},

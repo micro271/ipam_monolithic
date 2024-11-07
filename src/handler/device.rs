@@ -1,5 +1,5 @@
 use super::*;
-use crate::models::{network::*, device::*};
+use crate::models::{device::*, network::*};
 
 use std::net::IpAddr;
 
@@ -31,7 +31,7 @@ pub async fn create_all_devices(
         .get::<Network>(Some(HashMap::from([("id", network_id.into())])))
         .await?
         .remove(0);
-    println!("{:?}",network);
+    println!("{:?}", network);
     match models_data_entry::create_all_devices(network.network, network_id) {
         Some(e) => Ok(state.insert::<Device>(e).await?),
         None => Err(ResponseError::StatusCode(StatusCode::NO_CONTENT)),
@@ -54,7 +54,7 @@ pub async fn get_all(
 pub async fn update(
     State(state): State<RepositoryType>,
     Extension(role): Extension<Role>,
-    Query(query_params::ParamDevice{ip, network_id}): Query<query_params::ParamDevice>,
+    Query(query_params::ParamDevice { ip, network_id }): Query<query_params::ParamDevice>,
     Json(device): Json<UpdateDevice>,
 ) -> Result<impl IntoResponse, ResponseError> {
     if role != Role::Admin {
@@ -109,7 +109,7 @@ pub async fn update(
 
 pub async fn get_one(
     State(state): State<RepositoryType>,
-    Query(query_params::ParamDevice{ip, network_id}): Query<query_params::ParamDevice>,
+    Query(query_params::ParamDevice { ip, network_id }): Query<query_params::ParamDevice>,
 ) -> Result<impl IntoResponse, ResponseError> {
     let state = state.lock().await;
 

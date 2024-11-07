@@ -8,8 +8,8 @@ pub struct User {
     pub role: Role,
 }
 
-#[derive(Deserialize, Serialize, Debug)] 
-struct UpdateUser{
+#[derive(Deserialize, Serialize, Debug)]
+struct UpdateUser {
     username: Option<String>,
     password: Option<String>,
     role: Option<Role>,

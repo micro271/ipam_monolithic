@@ -1,4 +1,3 @@
-
 use super::*;
 use crate::services::{self, create_token, encrypt, verify_pass, Verify};
 use axum::{extract::Request, middleware::Next, response::Response};
@@ -44,7 +43,7 @@ pub async fn login(
 
 pub async fn verify_token(mut req: Request, next: Next) -> Result<Response, ResponseError> {
     match req.headers().get(axum::http::header::AUTHORIZATION) {
-        Some(e) => match e.to_str() {    
+        Some(e) => match e.to_str() {
             Ok(e) => match e.split(' ').collect::<Vec<_>>().get(1) {
                 Some(e) => match services::verify_token(e) {
                     Ok(Verify::Ok(e)) => {

@@ -1,5 +1,5 @@
-use serde::{Deserialize, Serialize};
 use super::Uuid;
+use serde::{Deserialize, Serialize};
 use std::net::IpAddr;
 
 #[derive(Deserialize, Serialize, Debug)]

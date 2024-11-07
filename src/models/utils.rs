@@ -1,8 +1,11 @@
+use super::device::*;
 use super::{network::*, *};
 use ipnet::IpNet;
-use std::{{net::IpAddr, vec}, collections::HashMap};
+use std::{
+    collections::HashMap,
+    {net::IpAddr, vec},
+};
 use uuid::Uuid;
-use super::device::*;
 
 pub trait Table {
     fn name() -> String;
@@ -53,7 +56,15 @@ impl Table for Device {
 
 impl Table for Network {
     fn columns() -> Vec<&'static str> {
-        vec!["id", "network", "available", "used", "total", "vlan", "description"]
+        vec![
+            "id",
+            "network",
+            "available",
+            "used",
+            "total",
+            "vlan",
+            "description",
+        ]
     }
 
     fn name() -> String {
@@ -110,11 +121,7 @@ impl<'a> Updatable<'a> for UpdateDevice {
         }
 
         if let Some(tmp) = self.description {
-            let data = if tmp.is_empty() {
-                None
-            } else {
-                Some(tmp)
-            };
+            let data = if tmp.is_empty() { None } else { Some(tmp) };
 
             pair.insert("description", data.into());
         }
@@ -133,20 +140,12 @@ impl<'a> Updatable<'a> for UpdateDevice {
         }
 
         if let Some(tmp) = self.rack {
-            let tmp = if tmp.is_empty() {
-                None
-            } else {
-                Some(tmp)
-            };
+            let tmp = if tmp.is_empty() { None } else { Some(tmp) };
             pair.insert("rack", tmp.into());
         }
 
         if let Some(tmp) = self.room {
-            let tmp = if tmp.is_empty() {
-                None
-            } else {
-                Some(tmp)
-            };
+            let tmp = if tmp.is_empty() { None } else { Some(tmp) };
             pair.insert("room", tmp.into());
         }
 
@@ -173,11 +172,7 @@ impl<'a> Updatable<'a> for UpdateNetwork {
         let mut pair = HashMap::new();
 
         if let Some(tmp) = self.description {
-            let tmp = if tmp.is_empty() {
-                None
-            } else {
-                Some(tmp)
-            };
+            let tmp = if tmp.is_empty() { None } else { Some(tmp) };
             pair.insert("description", tmp.into());
         }
 

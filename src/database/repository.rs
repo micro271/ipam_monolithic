@@ -1,7 +1,7 @@
 use super::Table;
 use crate::models::utils::{TypeTable, Updatable};
 use sqlx::sqlite::SqliteRow;
-use std::{boxed::Box, collections::HashMap, future::Future, pin::Pin, fmt::Debug};
+use std::{boxed::Box, collections::HashMap, fmt::Debug, future::Future, pin::Pin};
 
 pub type ResultRepository<'a, T> =
     Pin<Box<dyn Future<Output = Result<T, RepositoryError>> + 'a + Send>>;

@@ -1,13 +1,16 @@
-pub mod repository;
 pub mod convert;
+pub mod repository;
 
+use crate::models::utils::*;
 use futures::stream::StreamExt;
+use repository::*;
 use sqlx::sqlite::{SqliteConnectOptions, SqliteJournalMode, SqlitePool, SqliteRow};
 use std::{
-    collections::HashMap, fmt::Debug, ops::{Deref, DerefMut}, str::FromStr
+    collections::HashMap,
+    fmt::Debug,
+    ops::{Deref, DerefMut},
+    str::FromStr,
 };
-use repository::*;
-use crate::models::utils::*;
 
 pub struct SqliteRepository(SqlitePool);
 
@@ -39,12 +42,15 @@ impl SqliteRepository {
 
     async fn init_db(&self) -> Result<(), RepositoryError> {
         let query = include_str!("../../initdb.sql");
-        sqlx::query(query).execute(&self.0).await.expect("Error aquiaaaaaaa");
+        sqlx::query(query)
+            .execute(&self.0)
+            .await
+            .expect("Error aquiaaaaaaa");
         Ok(())
     }
 
     async fn create_default_user(&self) -> Result<(), RepositoryError> {
-        use crate::{services::encrypt, models::user::*};
+        use crate::{models::user::*, services::encrypt};
 
         if self
             .get::<User>(Some(HashMap::from([("role", Role::Admin.into())])))
@@ -134,7 +140,7 @@ impl Repository for SqliteRepository {
         Box::pin(async {
             let mut query = format!("SELECT * FROM {}", T::name());
             let mut vec_resp = Vec::new();
-            
+
             println!("{:?}", &column_data);
             match column_data {
                 Some(col) if !col.is_empty() => {
@@ -157,7 +163,7 @@ impl Repository for SqliteRepository {
                         data_pos.insert(pos, col.get(i).unwrap());
                         pos += 1;
                     }
-                    println!("{:?}",query);
+                    println!("{:?}", query);
                     let mut resp = sqlx::query(&query);
 
                     for i in 1..pos {
