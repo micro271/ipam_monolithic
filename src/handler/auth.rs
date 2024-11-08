@@ -2,7 +2,7 @@ use crate::services::Claims;
 
 use super::*;
 use axum::{extract::Request, middleware::Next, response::Response};
-use ipam_rs::authentication::{self, create_token, encrypt, verify_passwd};
+use libipam::authentication::{self, create_token, encrypt, verify_passwd};
 
 pub async fn create(
     State(state): State<RepositoryType>,

@@ -51,7 +51,7 @@ impl SqliteRepository {
 
     async fn create_default_user(&self) -> Result<(), RepositoryError> {
         use crate::models::user::*;
-        use ipam_rs::authentication::encrypt;
+        use libipam::authentication::encrypt;
 
         if self
             .get::<User>(Some(HashMap::from([("role", Role::Admin.into())])))

@@ -8,7 +8,7 @@ pub struct Claims {
     pub role: Role,
 }
 
-impl ipam_rs::authentication::Claim for Claims {}
+impl libipam::authentication::Claim for Claims {}
 
 impl From<User> for Claims {
     fn from(value: User) -> Self {
