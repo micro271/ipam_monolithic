@@ -1,4 +1,5 @@
 pub mod auth;
+pub mod http;
 pub mod device;
 pub mod error;
 mod models_data_entry;

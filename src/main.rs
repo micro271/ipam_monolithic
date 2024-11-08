@@ -56,8 +56,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .nest("/device", device)
         .nest("/user", user)
         .layer(middleware::from_fn(auth::verify_token))
-        .route("/login", post(auth::login))
-        .with_state(db.clone());
+        .route("/login", post(auth::login).get(http::login))
+        .with_state(db.clone())
+        .fallback(http::fallback);
 
     serve(lst, app).await?;
 
