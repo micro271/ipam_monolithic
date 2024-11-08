@@ -16,14 +16,5 @@
 
         <button onclick="login()">Login</button>
     </section>
-
-    <script>
-        async function login(event) {
-            
-            let get = await fetch("http://localhost:3000/login");
-            let token = await get.json();
-            console.log(token);
-        }
-    </script>
 </body>
 </html>

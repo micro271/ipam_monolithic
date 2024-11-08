@@ -57,7 +57,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let web = Router::new()
         .nest_service("/static", ServeDir::new("templates/static"))
-        .route("/networks", get(http::http_view_network))
+        .route("/", get(http::http_view_network))
         .route("/devices/:network_id", get(http::http_view_devices));
 
     let app = Router::new()

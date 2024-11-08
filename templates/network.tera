@@ -1,0 +1,36 @@
+
+{% block networks %}
+
+    <h1> {{ title }} </h1>
+    <table class="table table-bordered table-hover">
+        <thead class="thead-light">
+            <tr>
+                <th scope="col">#</th>
+                <th scope="col">id</th>
+                <th scope="col">network</th>
+                <th scope="col">vlan</th>
+                <th scope="col">description</th>
+                <th scope="col">total</th>
+                <th scope="col">available</th>
+                <th scope="col">used</th>
+                <th scope="col">more</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for net in networks %}
+                <tr>
+                    <th scope="row">{{loop.index}}</th>
+                    <td>{{ net.id }}</td>
+                    <td>{{ net.network }}</td>
+                    <td>{{ net.vlan }}</td>
+                    <td>{{ net.description }}</td>
+                    <td>{{ net.total }}</td>
+                    <td>{{ net.available }}</td>
+                    <td>{{ net.used }}</td>
+                    <td><a href="/devices/{{net.id}}">View</a></td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+{% endblock %}

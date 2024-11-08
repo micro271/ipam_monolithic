@@ -36,12 +36,13 @@ pub async fn http_view_network(State(state): State<RepositoryType>) -> impl Into
     let networks = state.get::<Network>(None).await.unwrap();
     
     let mut cont = Context::new();
+    cont.insert("block", "network");
     cont.insert("networks", &networks);
     cont.insert("title", "Networks");
 
     let tera = TEMPLATES.lock().await;
 
-    Html(tera.render("network.html", &cont).unwrap()).into_response()
+    Html(tera.render("index.html", &cont).unwrap()).into_response()
 }
 
 pub async fn http_view_devices(State(state): State<RepositoryType>, Path(network_id): Path<Uuid>) -> impl IntoResponse {
@@ -52,9 +53,10 @@ pub async fn http_view_devices(State(state): State<RepositoryType>, Path(network
     let devices = state.get::<Device>(Some(HashMap::from([("network_id", network_id.into())]))).await.unwrap();
     
     let mut con = Context::new();
+    con.insert("block", "device");
     con.insert("network",&network.first().map(|x| x.network));
     con.insert("devices", &devices);
     let tera = TEMPLATES.lock().await;
-    Html(tera.render("devices.html", &con).unwrap()).into_response()
+    Html(tera.render("index.html", &con).unwrap()).into_response()
 }
 
