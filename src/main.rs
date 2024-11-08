@@ -5,7 +5,6 @@ mod services;
 
 
 use axum::{
-    http::Response,
     middleware,
     routing::{delete, get, post, put},
     serve, Router,
@@ -16,6 +15,7 @@ use handler::*;
 use std::env;
 use std::sync::Arc;
 use tokio::sync::Mutex;
+use tower_http::services::ServeDir;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -48,14 +48,22 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .route("/delete", delete(device::delete))
         .route("/one", get(device::get_one).patch(device::update)); //get one device
 
-    let user = Router::new().route("/", post(auth::create));
-
-    let app = Router::new()
-        .route("/", get(hello_world))
+    let login = Router::new().route("/", post(auth::create));
+    
+    let api = Router::new()
         .nest("/network", network)
         .nest("/device", device)
-        .nest("/user", user)
+        .nest("/login", login);
+
+    let web = Router::new()
+        .nest_service("/static", ServeDir::new("templates/static"))
+        .route("/networks", get(http::http_view_network))
+        .route("/devices/:network_id", get(http::http_view_devices));
+
+    let app = Router::new()
+        .nest("/api", api)
         .layer(middleware::from_fn(auth::verify_token))
+        .nest("/", web)
         .route("/login", post(auth::login).get(http::login))
         .with_state(db.clone())
         .fallback(http::fallback);
@@ -63,12 +71,4 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     serve(lst, app).await?;
 
     Ok(())
-}
-
-async fn hello_world() -> Response<String> {
-    Response::builder()
-        .status(200)
-        .header("Content-Type", "text/html")
-        .body("<h1>Welcome</h1>".to_string())
-        .unwrap_or_default()
 }
