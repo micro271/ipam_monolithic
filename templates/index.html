@@ -8,15 +8,15 @@
 </head>
 <body>
     <div class="container">
-        <nav class="nav nav-pills flex-column flex-sm-row">
-            <a class="flex-sm-fill text-sm-center nav-link {% if block == 'network' %}active{% endif %}" href="#">Networks</a>
+        <nav class="nav nav-pills flex-column flex-sm-row p-3">
+            <a class="flex-sm-fill text-sm-center nav-link {% if block == 'network' %}active{% endif %}" href="/">Networks</a>
             <a class="flex-sm-fill text-sm-center nav-link {% if block == 'device' %}active{% endif %}" href="#">Devices</a>
             <a class="flex-sm-fill text-sm-center nav-link {% if block == 'office' %}active{% endif %}" href="#">Offices</a>
         </nav>
         {% if block == "device" %}
-            {% include "device.tera" %}
+            {% include "device.tera.html" %}
         {% else %}
-            {% include "network.tera" %}
+            {% include "network.tera.html" %}
         {% endif %}
     </div>
 </body>

@@ -1,7 +1,7 @@
 use crate::services::Claims;
 
 use super::*;
-use axum::{extract::Request, middleware::Next, response::Response};
+use axum::{extract::Request, middleware::Next, response::{Redirect, Response}};
 use libipam::authentication::{self, create_token, encrypt, verify_passwd};
 
 pub async fn create(
@@ -36,7 +36,16 @@ pub async fn login(
 
     if verify_passwd(user.password, &resp.password) {
         match create_token(Claims::from(resp)) {
-            Ok(e) => Ok(Json(json!({"token":e}))),
+            Ok(e) => {
+
+                let mut req = Redirect::to("/").into_response();
+                let cook = cookie::Cookie::build((libipam::cookie::Cookie::TOKEN.to_string(), e))
+                    .http_only(true)
+                    .path("/")
+                    .max_age(time::Duration::minutes(30));
+                req.headers_mut().insert(axum::http::header::SET_COOKIE, cook.to_string().parse().unwrap());
+                Ok(req)
+            },
             Err(_) => Err(ResponseError::ServerError),
         }
     } else {
@@ -44,21 +53,12 @@ pub async fn login(
     }
 }
 
-pub async fn verify_token(mut req: Request, next: Next) -> Result<Response, ResponseError> {
-    match req.headers().get(axum::http::header::AUTHORIZATION) {
-        Some(e) => match e.to_str() {
-            Ok(e) => match e.split(' ').collect::<Vec<_>>().get(1) {
-                Some(e) => match authentication::verify_token::<Claims, _>(*e) {
-                    Ok(e) => {
-                        req.extensions_mut().insert(e.role);
-                        Ok(next.run(req).await)
-                    }
-                    _ => Err(ResponseError::Unauthorized),
-                },
-                None => Err(ResponseError::StatusCode(StatusCode::BAD_REQUEST)),
-            },
-            Err(_) => Err(ResponseError::StatusCode(StatusCode::BAD_REQUEST)),
+pub async fn verify_token(libipam::Token(token): libipam::Token, mut req: Request, next: Next) -> Result<Response, Redirect> {
+    match authentication::verify_token::<Claims,_>(token) {
+        Ok(e) => {
+            req.extensions_mut().insert(e.role);
+            Ok(next.run(req).await)
         },
-        None => Err(ResponseError::Unauthorized),
+        Err(_) => Err(Redirect::to("/login")),
     }
 }

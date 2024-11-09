@@ -48,7 +48,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .route("/delete", delete(device::delete))
         .route("/one", get(device::get_one).patch(device::update)); //get one device
 
-    let login = Router::new().route("/", post(auth::create));
+    let login = Router::new().route("/", put(auth::create));
     
     let api = Router::new()
         .nest("/network", network)
@@ -62,8 +62,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let app = Router::new()
         .nest("/api", api)
-        .layer(middleware::from_fn(auth::verify_token))
         .nest("/", web)
+        .layer(middleware::from_fn(auth::verify_token))
         .route("/login", post(auth::login).get(http::login))
         .with_state(db.clone())
         .fallback(http::fallback);
