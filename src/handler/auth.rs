@@ -39,10 +39,12 @@ pub async fn login(
             Ok(e) => {
 
                 let mut req = Redirect::to("/").into_response();
+
                 let cook = cookie::Cookie::build((libipam::cookie::Cookie::TOKEN.to_string(), e))
                     .http_only(true)
                     .path("/")
                     .max_age(time::Duration::minutes(30));
+                
                 req.headers_mut().insert(axum::http::header::SET_COOKIE, cook.to_string().parse().unwrap());
                 Ok(req)
             },

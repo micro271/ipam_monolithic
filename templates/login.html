@@ -40,7 +40,11 @@
                 },
                 body: JSON.stringify(send)
             });
-            console.log(resp);
+            
+
+            if (resp.ok) {
+                window.location.href = "/"
+            }
         });
     </script>
 </body>
