@@ -1,7 +1,11 @@
 use crate::services::Claims;
 
 use super::*;
-use axum::{extract::Request, middleware::Next, response::{Redirect, Response}};
+use axum::{
+    extract::Request,
+    middleware::Next,
+    response::{Redirect, Response},
+};
 use libipam::authentication::{self, create_token, encrypt, verify_passwd};
 
 pub async fn create(
@@ -37,17 +41,19 @@ pub async fn login(
     if verify_passwd(user.password, &resp.password) {
         match create_token(Claims::from(resp)) {
             Ok(e) => {
-
                 let mut req = Redirect::to("/").into_response();
 
                 let cook = cookie::Cookie::build((libipam::cookie::Cookie::TOKEN.to_string(), e))
                     .http_only(true)
                     .path("/")
                     .max_age(time::Duration::minutes(30));
-                
-                req.headers_mut().insert(axum::http::header::SET_COOKIE, cook.to_string().parse().unwrap());
+
+                req.headers_mut().insert(
+                    axum::http::header::SET_COOKIE,
+                    cook.to_string().parse().unwrap(),
+                );
                 Ok(req)
-            },
+            }
             Err(_) => Err(ResponseError::ServerError),
         }
     } else {
@@ -55,12 +61,16 @@ pub async fn login(
     }
 }
 
-pub async fn verify_token(libipam::Token(token): libipam::Token, mut req: Request, next: Next) -> Result<Response, Redirect> {
-    match authentication::verify_token::<Claims,_>(token) {
-        Ok(e) => {
+pub async fn verify_token(
+    libipam::Token(token): libipam::Token,
+    mut req: Request,
+    next: Next,
+) -> Result<Response, Redirect> {
+    match token.map(authentication::verify_token::<Claims, _>) {
+        Ok(Ok(e)) => {
             req.extensions_mut().insert(e.role);
             Ok(next.run(req).await)
-        },
-        Err(_) => Err(Redirect::to("/login")),
+        }
+        _ => Err(Redirect::to("/login")),
     }
 }
