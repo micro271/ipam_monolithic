@@ -3,15 +3,17 @@ document.getElementById("create_row").addEventListener("click", create_row);
 
 const ID_TBODY = "new_network_body";
 const ID_TABLE = "new_network_table";
+const ID_CONTAINER = "container_table";
 
 function create_row() {
     
-    const container = document.getElementById("container");
+    const container = document.getElementById("container_table");
+    
     let tbody;
     try {
         tbody = document.getElementById(ID_TBODY);
         if (!tbody) {
-            throw new ("tbody doesn't existe")
+            throw new ("tbody doesn't existe");
         }
     } catch {
         const table = document.createElement("table");
@@ -57,7 +59,7 @@ function create_row() {
         tbody = document.createElement("tbody");
         tbody.id = ID_TBODY;
         table.appendChild(tbody);
-        container.appendChild(table);
+        container.append(table);
     }            
     
     //creating row
@@ -70,8 +72,6 @@ function create_row() {
     th.scope = "row";
     th.innerHTML = len;
     new_row.appendChild(th);
-
-    new_row.id = "new_network_row_" + len
 
     if (len > 1) {
         let button_send_all = document.getElementById("new_network_button_send_all");
@@ -158,6 +158,9 @@ function create_row() {
     button_delete.type = "button";
     button_delete.classList = "btn btn-danger";
     button_delete.innerHTML = "RM";
+    button_delete.setAttribute('data-row',len);
+
+    button_delete.addEventListener("click", rm_one);
 
     const td_to_button_delete = document.createElement("td");
     td_to_button_delete.classList = "text-center"
@@ -190,7 +193,7 @@ const send_one = (event) => {
     if (description) {
         json.description = description;
     }
-    console.log(json)
+    
     if (json) {
         fetch('/api/network/create',{
             method: 'PUT',
@@ -203,6 +206,35 @@ const send_one = (event) => {
                 console.log(response)
             }
         });
+    }
+}
+
+const rm_one = (event) => {
+    const tg = event.target;
+    const row_number = tg.getAttribute("data-row");
+
+    const table = document.getElementById(ID_TABLE);
+    table.rows[row_number].remove();
+
+    reorganize_rows(table);
+
+}
+
+const reorganize_rows = (table) => {
+    let rows = table.rows;
+    if (rows && rows.length > 0) {
+        rows = Array.from(rows).slice(1, table.rows.length);
+        for (const [index, row] of rows.entries()) {
+            const buttons = row.querySelectorAll('button');
+            console.log(row);
+            console.log(buttons.length);
+            console.log(index);
+            for (const button of buttons) {
+                button.setAttribute('data-row',index+1);
+            }
+            const th = row.querySelector('th');
+            th.innerHTML = index+1;
+        }
     }
 }
 

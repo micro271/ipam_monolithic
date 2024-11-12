@@ -22,7 +22,7 @@
                     <th scope="row">{{loop.index}}</th>
                     <td>{{ net.id }}</td>
                     <td>{{ net.network }}</td>
-                    <td>{{ net.vlan }}</td>
+                    <td>{% if net.vlan %}{{net.vlan}}{% endif %}</td>
                     <td>{{ net.description }}</td>
                     <td>{{ net.total }}</td>
                     <td>{{ net.available }}</td>
@@ -34,6 +34,6 @@
     </table>
     <br>
     <button type="button" class="btn btn-primary mb-3" id="create_row">Add new network</button>
-
+    <section id="container_table"></section>
     <script src="/static/new_network.js"></script>
 {% endblock %}
