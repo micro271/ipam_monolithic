@@ -91,9 +91,16 @@ function create_row() {
             button_delete_all.classList = "btn btn-danger ms-2";
             button_delete_all.innerHTML = "Remove all";
 
+            button_delete_all.addEventListener('click', (event) => {
+                const table = document.getElementById(ID_TABLE);
+                if (table) { table.remove(); }
+                const div = document.getElementById(ID_CONTAINER_BUTTONS_ALL);
+                div.remove();
+            });
+
             const div = document.createElement("div");
             div.classList = "col";
-            div.id = "div_container_new_network_buttons_all";
+            div.id = ID_CONTAINER_BUTTONS_ALL;
             div.appendChild(button_send_all);
             div.appendChild(button_delete_all);
             container.appendChild(div);
@@ -213,18 +220,16 @@ const send_network = (data) => {
 const rm_one = (event) => {
     const tg = event.target;
     const row_number = tg.getAttribute("data-row");
-
     const table = document.getElementById(ID_TABLE);
     table.rows[row_number].remove();
-
     reorganize_rows(table);
-
 }
 
 const reorganize_rows = (table) => {
-    let rows = table.rows;
-    if (rows && rows.length > 0) {
-        rows = Array.from(rows).slice(1, table.rows.length);
+    const rows = Array.from(table.rows).slice(1);
+    if (rows.length == 0) {
+        table.remove();
+    } else {
         for (const [index, row] of rows.entries()) {
             const buttons = row.querySelectorAll('button');
             for (const button of buttons) {
