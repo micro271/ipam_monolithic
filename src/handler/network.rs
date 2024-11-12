@@ -3,6 +3,7 @@ use tracing::instrument;
 use super::*;
 use crate::models::network::*;
 
+#[instrument]
 pub async fn create(
     State(state): State<RepositoryType>,
     Extension(role): Extension<Role>,
@@ -13,7 +14,7 @@ pub async fn create(
     }
 
     let state = state.lock().await;
-
+    tracing::info!("New network {:?}", netw);
     Ok(state.insert::<Network>(vec![netw.into()]).await?)
 }
 

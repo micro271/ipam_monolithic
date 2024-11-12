@@ -117,7 +117,7 @@ function create_row() {
     
     //creating input_vlan
     const input_vlan = document.createElement("input");
-    input_vlan.type = "text";
+    input_vlan.type = "number";
     input_vlan.placeholder = "vlan";
     input_vlan.name = "vlan";
 
@@ -174,19 +174,38 @@ const send_one = (event) => {
     const tg = event.target;
     const row_numner = tg.getAttribute("data-row");
     const row = document.getElementById(ID_TABLE).rows[row_numner];
-    const network = row.querySelector('input[name="network"]');
-    const vlan = row.querySelector('input[name="vlan"]');
-    const description = row.querySelector('input[name="description"]');
-    const json = {
-        description: description.value,
-        network: network.value,
-        vlan: vlan.value
-    };
-    fetch('/api/network/create',{
-        method: 'PUT',
-        headers: {
-            'Content-type': 'application/json',
-        },
-        body: JSON.stringify(json)
-    }).then(console.log);
+    const network = row.querySelector('input[name="network"]').value;
+    const vlan = row.querySelector('input[name="vlan"]').value;
+    const description = row.querySelector('input[name="description"]').value;
+    const json = {};
+
+    if (network) {
+        json.network = network;
+    }
+
+    if (vlan) {
+        json.vlan = vlan;
+    }
+
+    if (description) {
+        json.description = description;
+    }
+    console.log(json)
+    if (json) {
+        fetch('/api/network/create',{
+            method: 'PUT',
+            headers: {
+                'Content-type': 'application/json',
+            },
+            body: JSON.stringify(json)
+        }).then(response => {
+            if (response.ok) {
+                console.log(response)
+            }
+        });
+    }
+}
+
+const insert_new_network = () => {
+    
 }

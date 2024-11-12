@@ -12,6 +12,7 @@ use std::{
     str::FromStr,
 };
 
+#[derive(Debug)]
 pub struct SqliteRepository(SqlitePool);
 
 impl SqliteRepository {
