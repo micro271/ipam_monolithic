@@ -29,7 +29,13 @@ impl From<Network> for network::Network {
         let avl = 2_u32.pow(32 - value.network.prefix_len() as u32) - 2;
         Self {
             id: Uuid::new_v4(),
-            network: value.network,
+            network: {
+                
+                let tmp = value.network;
+                let network = tmp.network();
+                let prefix = tmp.prefix_len();
+                format!("{}/{}", network, prefix).parse().unwrap()
+            },
             description: value.description,
             available: avl,
             used: 0,

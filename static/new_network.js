@@ -2,6 +2,7 @@
 document.getElementById("create_row").addEventListener("click", create_row);
 
 const ID_TBODY = "new_network_body";
+const ID_TABLE = "new_network_table";
 
 function create_row() {
     
@@ -16,6 +17,7 @@ function create_row() {
         const table = document.createElement("table");
 
         table.classList = "table table-bordered table-hover";
+        table.id = ID_TABLE;
         const thead = document.createElement("thead");
         thead.classList = "thead-light";
 
@@ -105,7 +107,7 @@ function create_row() {
     const input_network = document.createElement("input");
     input_network.type = "text";
     input_network.placeholder = "network";
-    input_network.id = "new_network";
+    input_network.name = "network";
 
     // input_network.setAttribute("")
 
@@ -117,7 +119,7 @@ function create_row() {
     const input_vlan = document.createElement("input");
     input_vlan.type = "text";
     input_vlan.placeholder = "vlan";
-    input_vlan.id = "new_vlan";
+    input_vlan.name = "vlan";
 
     const td_to_input_vlan = document.createElement("td");
     td_to_input_vlan.appendChild(input_vlan);
@@ -128,7 +130,7 @@ function create_row() {
     const input_description = document.createElement("input");
     input_description.type = "text";
     input_description.placeholder = "description";
-    input_description.id = "new_description";
+    input_description.name = "description";
 
     const td_to_input_description = document.createElement("td");
     td_to_input_description.appendChild(input_description);
@@ -170,5 +172,21 @@ function create_row() {
 
 const send_one = (event) => {
     const tg = event.target;
-    console.log(tg.getAttribute("data-row"));
+    const row_numner = tg.getAttribute("data-row");
+    const row = document.getElementById(ID_TABLE).rows[row_numner];
+    const network = row.querySelector('input[name="network"]');
+    const vlan = row.querySelector('input[name="vlan"]');
+    const description = row.querySelector('input[name="description"]');
+    const json = {
+        description: description.value,
+        network: network.value,
+        vlan: vlan.value
+    };
+    fetch('/api/network/create',{
+        method: 'PUT',
+        headers: {
+            'Content-type': 'application/json',
+        },
+        body: JSON.stringify(json)
+    }).then(console.log);
 }
