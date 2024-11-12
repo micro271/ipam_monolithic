@@ -83,6 +83,8 @@ function create_row() {
             button_send_all.classList = "btn btn-primary";
             button_send_all.innerHTML = "Send all";
 
+            button_send_all.addEventListener('click', send_all_networks);
+
             const button_delete_all = document.createElement("button");
             button_delete_all.id = "new_network_button_remove_all";
             button_delete_all.type = "button";
@@ -172,36 +174,40 @@ const send_one = (event) => {
     const tg = event.target;
     const row_numner = tg.getAttribute("data-row");
     const row = document.getElementById(ID_TABLE).rows[row_numner];
+    const json = get_data_network_to_send(row);
+    if (json) {
+        send_network(json)
+    }
+}
+
+const get_data_network_to_send = (row) => {
+    const json = {}
     const network = row.querySelector('input[name="network"]').value;
     const vlan = row.querySelector('input[name="vlan"]').value;
     const description = row.querySelector('input[name="description"]').value;
-    const json = {};
-
     if (network) {
         json.network = network;
     }
-
     if (vlan) {
         json.vlan = vlan;
     }
-
     if (description) {
         json.description = description;
     }
-    
-    if (json) {
-        fetch('/api/network/create',{
-            method: 'PUT',
-            headers: {
-                'Content-type': 'application/json',
-            },
-            body: JSON.stringify(json)
-        }).then(response => {
-            if (response.ok) {
-                console.log(response)
-            }
-        });
-    }
+
+    return json;
+}
+
+const send_network = (data) => {
+    let resp = fetch('/api/network/create',{
+        method: 'PUT',
+        headers: {
+            'Content-type': 'application/json',
+        },
+        body: JSON.stringify(data)
+    })
+    .then(response => response.json());
+    return resp;
 }
 
 const rm_one = (event) => {
@@ -234,5 +240,16 @@ const reorganize_rows = (table) => {
 }
 
 const send_all_networks = () => {
-
+    const rows = Array.from(document.getElementById(ID_TABLE).rows).slice(1);
+    if (rows) {
+        for (const row of rows) {
+            const data = get_data_network_to_send(row);
+            if (data){
+                send_network(data);
+                // todo, if we received status ok, we remove the row
+                row.remove();
+                reorganize_rows(document.getElementById(ID_TABLE));
+            }
+        }
+    }
 }
