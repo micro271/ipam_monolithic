@@ -1,12 +1,13 @@
 use axum::{
     extract::{Path, Request, State},
-    response::{Html, IntoResponse},
+    response::{Html, IntoResponse}, Extension,
 };
 use tracing::instrument;
 use std::{collections::HashMap, sync::LazyLock};
 use tera::{Context, Tera};
 use tokio::sync::Mutex;
 use uuid::Uuid;
+use super::Role;
 
 use crate::{
     database::repository::Repository,
@@ -35,7 +36,7 @@ pub async fn fallback(req: Request) -> impl IntoResponse {
     Html(tera.render("fallback.html", &context).unwrap()).into_response()
 }
 
-pub async fn http_view_network(State(state): State<RepositoryType>) -> impl IntoResponse {
+pub async fn http_view_network(State(state): State<RepositoryType>, Extension(role): Extension<Role>) -> impl IntoResponse {
     let state = state.lock().await;
 
     let networks = state.get::<Network>(None).await.unwrap();
@@ -44,6 +45,7 @@ pub async fn http_view_network(State(state): State<RepositoryType>) -> impl Into
     cont.insert("block", "network");
     cont.insert("networks", &networks);
     cont.insert("title", "Networks");
+    cont.insert("role", &role);
 
     let tera = TEMPLATES.lock().await;
 

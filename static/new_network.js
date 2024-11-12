@@ -4,6 +4,7 @@ document.getElementById("create_row").addEventListener("click", create_row);
 const ID_TBODY = "new_network_body";
 const ID_TABLE = "new_network_table";
 const ID_CONTAINER = "container_table";
+const ID_CONTAINER_BUTTONS_ALL = "div_container_new_network_buttons_all"
 
 function create_row() {
     
@@ -75,7 +76,6 @@ function create_row() {
 
     if (len > 1) {
         let button_send_all = document.getElementById("new_network_button_send_all");
-
         if (!button_send_all) {
             button_send_all = document.createElement("button");
             button_send_all.id = "new_network_button_send_all";
@@ -95,11 +95,6 @@ function create_row() {
             div.appendChild(button_send_all);
             div.appendChild(button_delete_all);
             container.appendChild(div);
-        }
-    } else {
-        const div = document.getElementById("div_container_new_network_buttons_all");
-        if (div) {
-            document.removeChild(div);
         }
     }
 
@@ -226,18 +221,18 @@ const reorganize_rows = (table) => {
         rows = Array.from(rows).slice(1, table.rows.length);
         for (const [index, row] of rows.entries()) {
             const buttons = row.querySelectorAll('button');
-            console.log(row);
-            console.log(buttons.length);
-            console.log(index);
             for (const button of buttons) {
                 button.setAttribute('data-row',index+1);
             }
             const th = row.querySelector('th');
             th.innerHTML = index+1;
         }
+        if (rows.length == 1) {
+            document.getElementById(ID_CONTAINER_BUTTONS_ALL).remove();
+        }
     }
 }
 
-const insert_new_network = () => {
-    
+const send_all_networks = () => {
+
 }

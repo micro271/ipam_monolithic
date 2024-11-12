@@ -33,7 +33,9 @@
         </tbody>
     </table>
     <br>
-    <button type="button" class="btn btn-primary mb-3" id="create_row">Add new network</button>
-    <section id="container_table"></section>
-    <script src="/static/new_network.js"></script>
+    {% if role == "Admin" %}
+        <button type="button" class="btn btn-primary mb-3" id="create_row">Add new network</button>
+        <section id="container_table"></section>
+        <script src="/static/new_network.js"></script>
+    {% endif %}
 {% endblock %}
