@@ -6,7 +6,7 @@ const ID_TABLE = "new_network_table";
 const ID_CONTAINER = "container_table";
 const ID_CONTAINER_BUTTONS_ALL = "div_container_new_network_buttons_all"
 
-function create_row() {
+const create_row = () => {
     
     const container = document.getElementById("container_table");
     
@@ -17,50 +17,7 @@ function create_row() {
             throw new ("tbody doesn't existe");
         }
     } catch {
-        const table = document.createElement("table");
-
-        table.classList = "table table-bordered table-hover";
-        table.id = ID_TABLE;
-        const thead = document.createElement("thead");
-        thead.classList = "thead-light";
-
-        const tr = document.createElement("tr");
-
-        const th_n = document.createElement("th");
-        th_n.innerHTML = "#";
-        th_n.scope = "col";
-        tr.appendChild(th_n);    
-
-        const th_network = document.createElement("th");
-        th_network.innerHTML = "network";
-        th_network.scope = "col";
-        tr.appendChild(th_network);
-
-
-        const th_vlan = document.createElement("th");
-        th_vlan.innerHTML = "vlan";
-        th_vlan.scope = "col";
-        tr.appendChild(th_vlan);
-
-
-        const th_description = document.createElement("th");
-        th_description.innerHTML = "description";
-        th_description.scope = "col";
-        tr.appendChild(th_description);
-
-        const th_padding = document.createElement("th");
         
-        th_padding.colSpan = 2;
-        tr.appendChild(th_padding);
-        
-        thead.appendChild(tr);
-
-        table.appendChild(thead);
-
-        tbody = document.createElement("tbody");
-        tbody.id = ID_TBODY;
-        table.appendChild(tbody);
-        container.append(table);
     }            
     
     //creating row
@@ -176,6 +133,37 @@ function create_row() {
     tbody.appendChild(new_row);
 }
 
+const create_table = (id_table, id_tbody, cols, colSpan) => {
+    const table = document.createElement("table");
+
+    table.classList = "table table-bordered table-hover";
+    table.id = id_table;
+    const thead = document.createElement("thead");
+    thead.classList = "thead-light";
+
+    const tr = document.createElement("tr");
+
+    for (const key of cols) {
+        const th = document.createElement("th");
+        th.innerHTML = cols[key];
+        th.scope = "col";        
+        if (colSpan) {
+            if (colSpan[key]) {
+                th.colSpan = colSpan[key];
+            }
+        }
+        tr.appendChild(th);
+    }
+    
+    thead.appendChild(tr);
+
+    table.appendChild(thead);
+
+    tbody = document.createElement("tbody");
+    tbody.id = id_tbody;
+    table.appendChild(tbody);
+    container.append(table);
+}
 
 const send_one = (event) => {
     const tg = event.target;

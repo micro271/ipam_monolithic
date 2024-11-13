@@ -36,6 +36,7 @@ pub async fn fallback(req: Request) -> impl IntoResponse {
     Html(tera.render("fallback.html", &context).unwrap()).into_response()
 }
 
+#[instrument]
 pub async fn http_view_network(State(state): State<RepositoryType>, Extension(role): Extension<Role>) -> impl IntoResponse {
     let state = state.lock().await;
 
@@ -61,12 +62,12 @@ pub async fn http_view_devices(
     let network = state
         .get::<Network>(Some(HashMap::from([("id", network_id.into())])))
         .await
-        .unwrap();
+        .unwrap_or_default();
 
     let devices = state
         .get::<Device>(Some(HashMap::from([("network_id", network_id.into())])))
         .await
-        .unwrap();
+        .unwrap_or_default();
 
     let mut con = Context::new();
     con.insert("block", "device");
