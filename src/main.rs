@@ -66,7 +66,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .nest_service("/static", ServeDir::new("static"))
         .route("/", get(http::http_view_network))
         .route("/devices/:network_id", get(http::http_view_devices))
-        .route("/favicon.ico", get(|| async {Redirect::to("/static/favicon.ico").into_response()}));
+        .route("/offices", http::offices)
+        .route("/favicon.ico", get(|| async {Redirect::to("/static/favicon.ico")
+        .into_response()}));
 
     let app = Router::new()
         .nest("/", web)

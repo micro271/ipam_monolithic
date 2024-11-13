@@ -2,7 +2,7 @@
 {% block networks %}
 
     <h1> {{ title }} </h1>
-    <table class="table table-bordered table-hover">
+    <table class="table table-bordered table-hover" id="table_main">
         <thead class="thead-light">
             <tr>
                 <th scope="col">#</th>
@@ -16,7 +16,7 @@
                 <th scope="col">more</th>
             </tr>
         </thead>
-        <tbody id="tbody">
+        <tbody id="table_main_tbody">
             {% for net in networks %}
                 <tr>
                     <th scope="row">{{loop.index}}</th>
@@ -36,6 +36,6 @@
     {% if role == "Admin" %}
         <button type="button" class="btn btn-primary mb-3" id="create_row">Add new network</button>
         <section id="container_table"></section>
-        <script src="/static/new_network.js"></script>
+        <script src="/static/new_network.js" type="module"></script>
     {% endif %}
 {% endblock %}

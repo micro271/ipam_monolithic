@@ -1,3 +1,15 @@
-body {
-    background-color: black;
+.online {
+    fill: rgb(50, 205, 50) !important;
+}
+
+.offline {
+    fill: red !important;
+}
+
+.unknown {
+    fill: grey !important;
+}
+
+.reserved {
+    fill: orange !important;
 }

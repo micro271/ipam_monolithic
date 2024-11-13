@@ -1,12 +1,12 @@
-
-document.getElementById("create_row").addEventListener("click", create_row);
+import { create_row, create_table, send_data } from "/static/main.js";
+document.getElementById("create_row").addEventListener("click", new_network);
 
 const ID_TBODY = "new_network_body";
 const ID_TABLE = "new_network_table";
 const ID_CONTAINER = "container_table";
 const ID_CONTAINER_BUTTONS_ALL = "div_container_new_network_buttons_all"
 
-const create_row = () => {
+function new_network() {
     
     const container = document.getElementById("container_table");
     
@@ -17,12 +17,20 @@ const create_row = () => {
             throw new ("tbody doesn't existe");
         }
     } catch {
-        
+        const cols = {
+            1: "#",
+            2: "network",
+            3: "vlan",
+            4: "description",
+            5: "",
+        };
+        const colSpan = {
+            5: 2,
+        };
+        tbody = create_table(ID_TABLE, ID_TBODY, container, cols, colSpan);
     }            
-    
     //creating row
     const new_row = document.createElement("tr");
-    
 
     const th = document.createElement("th");
     
@@ -133,45 +141,29 @@ const create_row = () => {
     tbody.appendChild(new_row);
 }
 
-const create_table = (id_table, id_tbody, cols, colSpan) => {
-    const table = document.createElement("table");
-
-    table.classList = "table table-bordered table-hover";
-    table.id = id_table;
-    const thead = document.createElement("thead");
-    thead.classList = "thead-light";
-
-    const tr = document.createElement("tr");
-
-    for (const key of cols) {
-        const th = document.createElement("th");
-        th.innerHTML = cols[key];
-        th.scope = "col";        
-        if (colSpan) {
-            if (colSpan[key]) {
-                th.colSpan = colSpan[key];
-            }
-        }
-        tr.appendChild(th);
-    }
-    
-    thead.appendChild(tr);
-
-    table.appendChild(thead);
-
-    tbody = document.createElement("tbody");
-    tbody.id = id_tbody;
-    table.appendChild(tbody);
-    container.append(table);
-}
-
-const send_one = (event) => {
+const send_one = async (event) => {
     const tg = event.target;
     const row_numner = tg.getAttribute("data-row");
-    const row = document.getElementById(ID_TABLE).rows[row_numner];
+    const table = document.getElementById(ID_TABLE);
+    const row = table.rows[row_numner];
     const json = get_data_network_to_send(row);
     if (json) {
-        send_network(json)
+        const data = {
+            body: JSON.stringify(json),
+            method: 'PUT',
+            endpoint: '/api/network/create',
+            headers: {'Content-type': 'application/json'}
+        }
+        const resp = await send_data(data);
+        if (resp.ok) {
+            row.remove();
+            if (table.rows.length == 1) {
+                table.remove()
+            }
+            if (table.rows.length <= 2) {
+                document.getElementById(ID_CONTAINER_BUTTONS_ALL).remove()
+            }
+        }
     }
 }
 
@@ -193,17 +185,6 @@ const get_data_network_to_send = (row) => {
     return json;
 }
 
-const send_network = (data) => {
-    let resp = fetch('/api/network/create',{
-        method: 'PUT',
-        headers: {
-            'Content-type': 'application/json',
-        },
-        body: JSON.stringify(data)
-    })
-    .then(response => response.json());
-    return resp;
-}
 
 const rm_one = (event) => {
     const tg = event.target;

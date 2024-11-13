@@ -1,15 +1,21 @@
 <div>
-    <h2>{{network}}</h2>
+    <div class="text-left">
+        <ul class="list-group list-group-flush">
+            <li class="list-group-item"><span class="font-monospace">id:</span> <span id="network_id">{{network.id}}</span></li>
+            <li class="list-group-item"><span class="font-monospace">network:</span> <span class="fw-bold">{{network.network}}</span></li>
+            <li class="list-group-item"><span class="font-monospace">vlan:</span> {{network.vlan}}</li>
+            <li class="list-group-item"><span class="font-monospace">description:</span> {{network.description}}</li>
+            <li class="list-group-item"><span class="font-monospace">available:</span> {{network.available}}</li>
+            <li class="list-group-item"><span class="font-monospace">used:</span> {{network.used}}</li>
+            <li class="list-group-item"><span class="font-monospace">total:</span> {{network.total}}</li>
+          </ul>
+    </div>
     <section class="d-flex justify-content-between align-content-stretch flex-wrap">
-
         {% if devices | length > 0 %}
             {% for device in devices %}
                 <article style="flex-grow: 1;" class="d-flex flex-column align-items-center justify-content-center p-2 box-border">
                     <p class="text-weight-bold m-0">{{ device.ip }}</p>
-
-                    <svg xmlns="http://www.w3.org/2000/svg" width="75" height="75" viewBox="0 0 24 24" style="fill: rgba(0, 0, 0, 1);transform: ;msFilter:;"><path d="M20 3H4a2 2 0 0 0-2 2v4a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2zM4 9V5h16v4zm16 4H4a2 2 0 0 0-2 2v4a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-4a2 2 0 0 0-2-2zM4 19v-4h16v4z"></path><path d="M17 6h2v2h-2zm-3 0h2v2h-2zm3 10h2v2h-2zm-3 0h2v2h-2z"></path></svg>
-                    
-
+                    <svg xmlns="http://www.w3.org/2000/svg" width="75" height="75" viewBox="0 0 24 24" style="fill: rgba(0, 0, 0, 1);transform: ;msFilter:;" class="{% if device.status == 'Reserved' %}reserved{% elif device.status == 'Online' %}online{% elif device.status == 'Offline' %}offline{% else %}unknown{% endif %}"><path d="M20 3H4a2 2 0 0 0-2 2v4a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2zM4 9V5h16v4zm16 4H4a2 2 0 0 0-2 2v4a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-4a2 2 0 0 0-2-2zM4 19v-4h16v4z"></path><path d="M17 6h2v2h-2zm-3 0h2v2h-2zm3 10h2v2h-2zm-3 0h2v2h-2z"></path></svg>
                     <div style="display: none;">
                         <p>{{ device.description }}</p>
                         <p>{{ device.rack }}</p>
@@ -22,12 +28,12 @@
             {% endfor %}
         {% else %}
                 <div>
-                    <button type="button" class="btn btn-primary">New</button>
-                    <button type="button" class="btn btn-warning">Create all</button>
+                    <button type="button" class="btn btn-primary" id="new_device_new">New</button>
+                    <button type="button" class="btn btn-warning" id="new_device_create_all_empty">Create all</button>
                 </div>
+                <script src="/static/device.js" type="module"></script>
         {% endif %}
     </section>
 
-    <script src="/static/device.js"></script>
 </div>  
 

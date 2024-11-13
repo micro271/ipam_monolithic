@@ -7,7 +7,7 @@ use std::{collections::HashMap, sync::LazyLock};
 use tera::{Context, Tera};
 use tokio::sync::Mutex;
 use uuid::Uuid;
-use super::Role;
+use super::{office::Office, Role};
 
 use crate::{
     database::repository::Repository,
@@ -71,9 +71,20 @@ pub async fn http_view_devices(
 
     let mut con = Context::new();
     con.insert("block", "device");
-    con.insert("network", &network.first().map(|x| x.network));
+    con.insert("network", &network.first());
     con.insert("devices", &devices);
     let tera = TEMPLATES.lock().await;
     Html(tera.render("index.html", &con).unwrap()).into_response()
 }
 
+pub async fn offices(State(state): State<RepositoryType>, Extension(role): Extension<Role>) -> impl IntoResponse{
+    let mut cont = Context::new();
+    cont.insert("block", "office");
+    cont.insert("role", &role);
+    
+    let state = state.lock().await;
+    let ofs = state.get::<Office>(None).await.unwrap_or_default();
+    cont.insert("offices", &ofs);
+    let tera = TEMPLATES.lock().await;
+    Html(tera.render("index.html", &cont).unwrap()).into_response()
+}
