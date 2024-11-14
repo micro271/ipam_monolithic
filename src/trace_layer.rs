@@ -10,7 +10,7 @@ pub fn make_span(req :&Request<Body>) -> Span {
     }).unwrap_or(tracing::field::display(String::from("Unknown")));
 
     tracing::info_span!("http_log", uri = %req.uri(), method = %req.method(), peer = %tmp, latency = tracing::field::Empty,
-    status = tracing::field::Empty) 
+    status = tracing::field::Empty, user = tracing::field::Empty, role = tracing::field::Empty) 
 }
 
 pub fn on_request(_req: &Request<Body>, _span: &Span) {

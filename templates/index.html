@@ -8,15 +8,15 @@
     <title>Ipam</title>
 </head>
 <body>    
-    <main class="container" id="container">
+    <main class="container">
         <nav class="nav nav-pills flex-column flex-sm-row p-3">
             <a class="flex-sm-fill text-sm-center nav-link {% if block == 'network' %}active{% endif %}" href="/">Networks</a>
             <a class="flex-sm-fill text-sm-center nav-link {% if block == 'device' %}active{% endif %}" href="#">Devices</a>
-            <a class="flex-sm-fill text-sm-center nav-link {% if block == 'office' %}active{% endif %}" href="#">Offices</a>
+            <a class="flex-sm-fill text-sm-center nav-link {% if block == 'office' %}active{% endif %}" href="/offices">Offices</a>
         </nav>
         {% if block == "device" %}
             {% include "device.tera.html" %}
-        {% elseif block == "network" %}
+        {% elif block == "network" %}
             {% include "network.tera.html" %}
         {% else %}
             {% include "office.tera.html" %}

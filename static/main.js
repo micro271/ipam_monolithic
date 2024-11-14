@@ -20,8 +20,8 @@ const create_table = (id_table, id_tbody, container, cols, colSpan) => {
             }
         }
         tr.appendChild(th);
+        
     }
-    
     thead.appendChild(tr);
 
     table.appendChild(thead);
@@ -33,7 +33,19 @@ const create_table = (id_table, id_tbody, container, cols, colSpan) => {
     return tbody;
 }
 
-const create_row = () => {
+const create_row = (cols, table) => {
+    
+    if(!cols || !table) { return ;}
+    const n_rows = table.rows.length;
+    const new_row = table.insertRow();
+    const th = document.createElement('th');
+    th.scope = 'row';
+    th.innerText = n_rows+1;
+    new_row.appendChild(th);
+    for (let i = 1; i <= cols.length; ì++) {
+        const cell = new_row.insertCell(i);
+        cell.innerHTML = cols[i];
+    }
 
 }
 

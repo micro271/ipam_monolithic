@@ -66,7 +66,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .nest_service("/static", ServeDir::new("static"))
         .route("/", get(http::http_view_network))
         .route("/devices/:network_id", get(http::http_view_devices))
-        .route("/offices", http::offices)
+        .route("/offices", get(http::offices))
         .route("/favicon.ico", get(|| async {Redirect::to("/static/favicon.ico")
         .into_response()}));
 

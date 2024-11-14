@@ -190,7 +190,7 @@ const rm_one = (event) => {
     const tg = event.target;
     const row_number = tg.getAttribute("data-row");
     const table = document.getElementById(ID_TABLE);
-    table.rows[row_number].remove();
+    table.deleteRow(row_number);
     reorganize_rows(table);
 }
 
