@@ -1,4 +1,5 @@
 import {create_row, create_table, send_data} from './main.js'
+import * as bootstrap from './bootstrap.min.js'
 
 document.getElementById("new_device_create_all_empty").addEventListener('click', async () => {
     const endpoint = document.getElementById("network_id").innerHTML;

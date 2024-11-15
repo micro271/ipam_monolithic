@@ -52,7 +52,6 @@ const create_row = (cols, table) => {
 const send_data = async (data) => {
     if (!data) { return null ;}
     
-    console.log(data);
     const resp = await fetch(data.endpoint,{
         method: data.method,
         headers: data.headers,
