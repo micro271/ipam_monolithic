@@ -1,15 +1,19 @@
-.online {
+.svg-online {
     fill: rgb(50, 205, 50) !important;
 }
 
-.offline {
+.svg-offline {
     fill: red !important;
 }
 
-.unknown {
+.svg-unknown {
     fill: grey !important;
 }
 
-.reserved {
+.svg-reserved {
     fill: orange !important;
+}
+
+.text-online {
+    color: rgb(50, 205, 50) !important;
 }
