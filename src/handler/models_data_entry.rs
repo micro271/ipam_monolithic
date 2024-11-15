@@ -73,6 +73,10 @@ impl From<Device> for device::Device {
 }
 
 pub fn create_all_devices(network: IpNet, id: Uuid) -> Option<Vec<device::Device>> {
+    if network.addr().is_ipv6() {
+        return None;
+    }
+    
     let ips = network.hosts().collect::<Vec<IpAddr>>();
     let mut resp = Vec::new();
     for ip in ips {

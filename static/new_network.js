@@ -254,11 +254,3 @@ buttons_rm.forEach(button => {
         }
     });
 });
-
-const rm_network = (event) => {
-    const tg = event.target;
-    
-    const row_number = tg.getAttribute("data-row");
-    const row = table.rows[row_number];
-    console.log(row.cells[2]);
-}
