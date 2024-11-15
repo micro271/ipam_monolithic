@@ -1,9 +1,8 @@
 CREATE TABLE IF NOT EXISTS networks (
     id TEXT PRIMARY KEY,
     network TEXT NOT NULL,
-    available INTEGER NOT NULL,
+    available BLOB NOT NULL,
     used INTEGER NOT NULL,
-    total INTEGER NOT NULL,
     vlan INTEGER,
     description TEXT
 );

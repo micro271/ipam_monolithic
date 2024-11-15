@@ -29,9 +29,8 @@ impl From<SqliteRow> for Network {
             id: value.get("id"),
             description: value.get("description"),
             network: value.get::<'_, &str, _>("network").parse().unwrap(),
-            available: value.get::<'_, i32, &str>("available") as u32,
-            used: value.get::<'_, i32, _>("used") as u32,
-            total: value.get::<'_, i32, _>("total") as u32,
+            available: bincode::deserialize(&value.get::<'_, Vec<u8>,_>("available")).unwrap_or_default(),
+            used: value.get("used"),
             vlan: Some(Vlan::new(value.get::<'_, i32, _>("vlan") as u16).unwrap()),
         }
     }

@@ -26,7 +26,13 @@ pub struct Network {
 
 impl From<Network> for network::Network {
     fn from(value: Network) -> Self {
-        let avl = 2_u32.pow(32 - value.network.prefix_len() as u32) - 2;
+        let ip = &value.network;
+        let avl = if (ip.max_prefix_len() - ip.prefix_len()) < 2 {
+            0
+        } else {
+            (2_u128.pow((ip.max_prefix_len() - ip.prefix_len()) as u32 )) - 2
+        };
+
         Self {
             id: Uuid::new_v4(),
             network: {
@@ -39,7 +45,6 @@ impl From<Network> for network::Network {
             description: value.description,
             available: avl,
             used: 0,
-            total: 0,
             vlan: value.vlan,
         }
     }

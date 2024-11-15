@@ -148,6 +148,7 @@ const send_one = async (event) => {
     const table = document.getElementById(ID_NEW_NETWORK_TABLE);
     const row = table.rows[row_numner];
     const json = get_data_network_to_send(row);
+    console.log(json)
     if (json) {
         const data = {
             body: JSON.stringify(json),
@@ -161,8 +162,11 @@ const send_one = async (event) => {
             if (table.rows.length == 1) {
                 table.remove()
             }
-            if (table.rows.length <= 2) {
+            if (table.rows.length == 2) {
                 document.getElementById(ID_CONTAINER_BUTTONS_ALL).remove()
+            }
+            if (!document.getElementById(ID_TABLE_CURRENT_NETWORKS || !document.contains(table))) {
+                location.reload(true);
             }
         }
     }
@@ -173,6 +177,7 @@ const get_data_network_to_send = (row) => {
     const network = row.querySelector('input[name="network"]').value;
     const vlan = row.querySelector('input[name="vlan"]').value;
     const description = row.querySelector('input[name="description"]').value;
+    
     if (network) {
         json.network = network;
     }
@@ -182,7 +187,9 @@ const get_data_network_to_send = (row) => {
     if (description) {
         json.description = description;
     }
-
+    if (Object.keys(json).length == 0) {
+        return null;
+    }
     return json;
 }
 
@@ -214,17 +221,38 @@ const reorganize_rows = (table) => {
     }
 }
 
-const send_all_networks = () => {
-    const rows = Array.from(document.getElementById(ID_NEW_NETWORK_TABLE).rows).slice(1);
-    if (rows) {
-        for (const row of rows) {
-            const data = get_data_network_to_send(row);
-            if (data){
-                send_network(data);
-                // todo, if we received status ok, we remove the row
-                row.remove();
-                reorganize_rows(document.getElementById(ID_NEW_NETWORK_TABLE));
+const send_all_networks = async () => {
+    const table_new_network = document.getElementById(ID_NEW_NETWORK_TABLE);
+
+    if (table_new_network) {
+        const rows = Array.from(table_new_network.rows).slice(1);
+        if (rows) {
+            for (const row of rows) {
+                const data = get_data_network_to_send(row);
+                if (data){
+                    const to_send = {
+                        endpoint: '/api/network/create',
+                        method: 'PUT',
+                        headers : {'Content-type':'application/json'},
+                        body: JSON.stringify(data)
+                    }
+                    
+                    if ((await send_data(to_send)).ok) {
+                        row.remove();
+                        reorganize_rows(document.getElementById(ID_NEW_NETWORK_TABLE));
+                        if (table_new_network.rows.length == 2) {
+                            const div_container_buttons = document.getElementById("div_container_new_network_buttons_all");
+                            if (div_container_buttons){
+                                div_container_buttons.remove();
+                            }
+                        }
+                    }                
+                }
+    
             }
+        }
+        if (table_new_network.rows.length <= 1) {
+            location.reload(true);
         }
     }
 }
@@ -237,20 +265,23 @@ const modifi_network = (event) => {
 }
 
 const table = document.getElementById(ID_TABLE_CURRENT_NETWORKS);
-const buttons_rm = Array.from(table.querySelectorAll('[data-type-button="rm"]'));
 
-buttons_rm.forEach(button => {
-    button.addEventListener('click',async (event) => {
-        const tg = event.target;
-        const row_number = tg.getAttribute("data-row");
-        const row = table.rows[row_number];
-        const network_id = row.cells[1].textContent;
-        const resp = await fetch(`/api/network/${network_id}`,{
-            method: 'DELETE'
+if (table) {
+    const buttons_rm = table.querySelectorAll('[data-type-button="rm"]');
+    
+    Array.from(buttons_rm).forEach(button => {
+        button.addEventListener('click',async (event) => {
+            const tg = event.target;
+            const row_number = tg.getAttribute("data-row");
+            const row = table.rows[row_number];
+            const network_id = row.cells[1].textContent;
+            const resp = await fetch(`/api/network/${network_id}`,{
+                method: 'DELETE'
+            });
+            if (resp.ok) {
+                row.remove()
+                reorganize_rows(table)
+            }
         });
-        if (resp.ok) {
-            row.remove()
-            reorganize_rows(table)
-        }
     });
-});
+}

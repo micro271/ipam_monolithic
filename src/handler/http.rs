@@ -75,6 +75,7 @@ pub async fn http_view_devices(
     con.insert("network", &network.first());
     con.insert("devices", &devices);
     con.insert("role", &role);
+    con.insert("ipv4", &network.first().map(|x|x.network.addr().is_ipv4()));
 
     let tera = TEMPLATES.lock().await;
     Html(tera.render("index.html", &con).unwrap()).into_response()

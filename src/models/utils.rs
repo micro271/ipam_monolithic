@@ -61,7 +61,6 @@ impl Table for Network {
             "network",
             "available",
             "used",
-            "total",
             "vlan",
             "description",
         ]
@@ -73,7 +72,7 @@ impl Table for Network {
 
     fn query_insert() -> String {
         format!(
-            "INSERT INTO {} (id, network, available, used, total, vlan, description) VALUES ($1, $2, $3, $4, $5, $6, $7)",
+            "INSERT INTO {} (id, network, available, used, vlan, description) VALUES ($1, $2, $3, $4, $5, $6)",
             Self::name()
         )
     }
@@ -84,7 +83,6 @@ impl Table for Network {
             self.network.into(),
             self.available.into(),
             self.used.into(),
-            self.total.into(),
             self.vlan.into(),
             self.description.into(),
         ]
@@ -218,12 +216,20 @@ pub enum TypeTable {
     Role(user::Role),
     Float64(f64),
     OptionVlan(Option<i32>),
-    OptionCredential(Option<Vec<u8>>),
+    Bytes(Option<Vec<u8>>),
+}
+
+
+impl From<u128> for TypeTable
+{
+    fn from(value: u128) -> Self {
+        Self::Bytes(bincode::serialize(&value).ok())
+    }
 }
 
 impl From<Option<Credential>> for TypeTable {
     fn from(value: Option<Credential>) -> Self {
-        Self::OptionCredential(value.map(|x| bincode::serialize(&x).unwrap()))
+        Self::Bytes(value.map(|x| bincode::serialize(&x).unwrap()))
     }
 }
 

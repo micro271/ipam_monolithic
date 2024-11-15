@@ -11,7 +11,6 @@
                     <th scope="col">network</th>
                     <th scope="col">vlan</th>
                     <th scope="col">description</th>
-                    <th scope="col" class="d-none d-lg-table-cell">total</th>
                     <th scope="col">available</th>
                     <th scope="col">used</th>
                     <th colspan="{% if role == 'Admin' %}3{%else%}1{% endif %}"></th>
@@ -25,7 +24,6 @@
                         <td>{{ net.network }}</td>
                         <td>{% if net.vlan %}{{net.vlan}}{% endif %}</td>
                         <td>{{ net.description }}</td>
-                        <td class="d-none d-lg-table-cell">{{ net.total }}</td>
                         <td>{{ net.available }}</td>
                         <td>{{ net.used }}</td>
                         <td class="text-center"><a href="/devices/{{net.id}}">Devices</a></td>

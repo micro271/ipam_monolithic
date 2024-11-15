@@ -1,9 +1,6 @@
-use tracing::instrument;
-
 use super::*;
 use crate::models::network::*;
 
-#[instrument]
 pub async fn create(
     State(state): State<RepositoryType>,
     Extension(role): Extension<Role>,

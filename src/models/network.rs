@@ -13,9 +13,8 @@ pub struct Network {
     pub vlan: Option<Vlan>,
     pub network: IpNet,
     pub description: Option<String>,
-    pub available: u32,
+    pub available: u128,
     pub used: u32,
-    pub total: u32,
 }
 
 impl std::ops::Deref for Vlan {

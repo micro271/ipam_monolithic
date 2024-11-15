@@ -7,7 +7,6 @@
             <li class="list-group-item"><span class="font-monospace">description:</span> {{network.description}}</li>
             <li class="list-group-item"><span class="font-monospace">available:</span> {{network.available}}</li>
             <li class="list-group-item"><span class="font-monospace">used:</span> {{network.used}}</li>
-            <li class="list-group-item"><span class="font-monospace">total:</span> {{network.total}}</li>
           </ul>
     </div>
     <section class="d-flex justify-content-between align-content-stretch flex-wrap">
@@ -40,7 +39,9 @@
         {% else %}
                 <div>
                     <button type="button" class="btn btn-primary" id="new_device_new">New</button>
-                    <button type="button" class="btn btn-warning" id="new_device_create_all_empty">Create all</button>
+                    {% if ipv4 %}
+                        <button type="button" class="btn btn-warning" id="new_device_create_all_empty">Create all</button>
+                    {% endif %}
                 </div>
                 <script src="/static/device.js" type="module"></script>
         {% endif %}
