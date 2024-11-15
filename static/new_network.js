@@ -2,9 +2,10 @@ import { create_row, create_table, send_data } from "/static/main.js";
 document.getElementById("create_row").addEventListener("click", new_network);
 
 const ID_TBODY = "new_network_body";
-const ID_TABLE = "new_network_table";
+const ID_NEW_NETWORK_TABLE = "new_network_table";
 const ID_CONTAINER = "container_table";
 const ID_CONTAINER_BUTTONS_ALL = "div_container_new_network_buttons_all"
+const ID_TABLE_CURRENT_NETWORKS = "table_main";
 
 function new_network() {
     
@@ -27,7 +28,7 @@ function new_network() {
         const colSpan = {
             5: 2,
         };
-        tbody = create_table(ID_TABLE, ID_TBODY, container, cols, colSpan);
+        tbody = create_table(ID_NEW_NETWORK_TABLE, ID_TBODY, container, cols, colSpan);
     }            
     //creating row
     const new_row = document.createElement("tr");
@@ -57,7 +58,7 @@ function new_network() {
             button_delete_all.innerHTML = "Remove all";
 
             button_delete_all.addEventListener('click', (event) => {
-                const table = document.getElementById(ID_TABLE);
+                const table = document.getElementById(ID_NEW_NETWORK_TABLE);
                 if (table) { table.remove(); }
                 const div = document.getElementById(ID_CONTAINER_BUTTONS_ALL);
                 div.remove();
@@ -144,7 +145,7 @@ function new_network() {
 const send_one = async (event) => {
     const tg = event.target;
     const row_numner = tg.getAttribute("data-row");
-    const table = document.getElementById(ID_TABLE);
+    const table = document.getElementById(ID_NEW_NETWORK_TABLE);
     const row = table.rows[row_numner];
     const json = get_data_network_to_send(row);
     if (json) {
@@ -189,7 +190,7 @@ const get_data_network_to_send = (row) => {
 const rm_one = (event) => {
     const tg = event.target;
     const row_number = tg.getAttribute("data-row");
-    const table = document.getElementById(ID_TABLE);
+    const table = document.getElementById(ID_NEW_NETWORK_TABLE);
     table.deleteRow(row_number);
     reorganize_rows(table);
 }
@@ -214,7 +215,7 @@ const reorganize_rows = (table) => {
 }
 
 const send_all_networks = () => {
-    const rows = Array.from(document.getElementById(ID_TABLE).rows).slice(1);
+    const rows = Array.from(document.getElementById(ID_NEW_NETWORK_TABLE).rows).slice(1);
     if (rows) {
         for (const row of rows) {
             const data = get_data_network_to_send(row);
@@ -222,8 +223,42 @@ const send_all_networks = () => {
                 send_network(data);
                 // todo, if we received status ok, we remove the row
                 row.remove();
-                reorganize_rows(document.getElementById(ID_TABLE));
+                reorganize_rows(document.getElementById(ID_NEW_NETWORK_TABLE));
             }
         }
     }
+}
+
+const modifi_network = (event) => {
+    const tg = event.target;
+    const table = document.getElementById(ID_TABLE_CURRENT_NETWORKS);
+    const row = tg.getAttribute("data-row");
+    // TODO
+}
+
+const table = document.getElementById(ID_TABLE_CURRENT_NETWORKS);
+const buttons_rm = Array.from(table.querySelectorAll('[data-type-button="rm"]'));
+
+buttons_rm.forEach(button => {
+    button.addEventListener('click',async (event) => {
+        const tg = event.target;
+        const row_number = tg.getAttribute("data-row");
+        const row = table.rows[row_number];
+        const network_id = row.cells[1].textContent;
+        const resp = await fetch(`/api/network/${network_id}`,{
+            method: 'DELETE'
+        });
+        if (resp.ok) {
+            row.remove()
+            reorganize_rows(table)
+        }
+    });
+});
+
+const rm_network = (event) => {
+    const tg = event.target;
+    
+    const row_number = tg.getAttribute("data-row");
+    const row = table.rows[row_number];
+    console.log(row.cells[2]);
 }

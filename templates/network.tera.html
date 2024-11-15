@@ -2,36 +2,42 @@
 {% block networks %}
 
     <h1> {{ title }} </h1>
-    <table class="table table-bordered table-hover" id="table_main">
-        <thead class="thead-light">
-            <tr>
-                <th scope="col">#</th>
-                <th scope="col">id</th>
-                <th scope="col">network</th>
-                <th scope="col">vlan</th>
-                <th scope="col">description</th>
-                <th scope="col">total</th>
-                <th scope="col">available</th>
-                <th scope="col">used</th>
-                <th scope="col">more</th>
-            </tr>
-        </thead>
-        <tbody id="table_main_tbody">
-            {% for net in networks %}
+    {% if networks | length > 0 %}
+        <table class="table table-hover text-center align-middle" id="table_main">
+            <thead>
                 <tr>
-                    <th scope="row">{{loop.index}}</th>
-                    <td>{{ net.id }}</td>
-                    <td>{{ net.network }}</td>
-                    <td>{% if net.vlan %}{{net.vlan}}{% endif %}</td>
-                    <td>{{ net.description }}</td>
-                    <td>{{ net.total }}</td>
-                    <td>{{ net.available }}</td>
-                    <td>{{ net.used }}</td>
-                    <td><a href="/devices/{{net.id}}">View</a></td>
+                    <th scope="col">#</th>
+                    <th scope="col">id</th>
+                    <th scope="col">network</th>
+                    <th scope="col">vlan</th>
+                    <th scope="col">description</th>
+                    <th scope="col">total</th>
+                    <th scope="col">available</th>
+                    <th scope="col">used</th>
+                    <th colspan="{% if role == 'Admin' %}3{%else%}1{% endif %}"></th>
                 </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+            </thead>
+            <tbody class="table-group-divider" id="table_main_tbody">
+                {% for net in networks %}
+                    <tr>
+                        <th scope="row">{{loop.index}}</th>
+                        <td>{{ net.id }}</td>
+                        <td>{{ net.network }}</td>
+                        <td>{% if net.vlan %}{{net.vlan}}{% endif %}</td>
+                        <td>{{ net.description }}</td>
+                        <td>{{ net.total }}</td>
+                        <td>{{ net.available }}</td>
+                        <td>{{ net.used }}</td>
+                        <td class="text-center"><a href="/devices/{{net.id}}">Devices</a></td>
+                        {% if role == 'Admin' %}
+                            <td class="text-center"><button type="button" class="btn btn-primary" onclick="modify_network(event)" data-type-button="modify" data-row="{{loop.index}}">Modify</button></td>
+                            <td class="text-center"><button type="button" class="btn btn-danger" data-type-button="rm" data-row="{{loop.index}}">RM</button></td>
+                        {% endif %}
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% endif %}
     <br>
     {% if role == "Admin" %}
         <button type="button" class="btn btn-primary mb-3" id="create_row">Add new network</button>

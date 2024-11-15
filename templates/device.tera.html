@@ -17,7 +17,7 @@
                     <p class="text-weight-bold m-0">{{ device.ip }}</p>
                     <div data-bs-toggle="popover" data-bs-title="<p class='fw-bold text-center'>{{device.ip}}</p>" data-bs-content="
                         <div class='lh-sm'>
-                            <p><span class='font-monospace'>Status:</span> <span class='fw-bold {% if device.status == 'Online' %}text-online{% elif device.status == 'Offline' %}text-danger{% endif %}'>{{device.status}}</span></p>
+                            <p><span class='font-monospace'>Status:</span> <span id='data_status' class='fw-bold {% if device.status == 'Online' %}text-online{% elif device.status == 'Offline' %}text-danger{% endif %}'>{{device.status}}</span></p>
                             <p><span class='font-monospace'>Description:</span> <span class='fw-bold'>{{device.description | default(value='empry')}}</span></p>
                             <p><span class='font-monospace'>Rack:</span> <span class='fw-bold'>{{device.rack | default(value='empry')}}</span></p>
                             <p><span class='font-monospace'>Room:</span> <span class='fw-bold'>{{device.room | default(value='empry')}}</span></p>
