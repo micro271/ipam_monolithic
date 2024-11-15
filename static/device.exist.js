@@ -39,7 +39,8 @@ const reserve_ip = (event) => {
             }
             const resp = await send_data(data);
             if (resp.ok) {
-                document.getElementById(`svg_${ip_}`).classList = 'reserved';
+                document.getElementById(`svg_${ip_}`).classList = 'svg-reserve';
+                e.target.remove()
             }
         })
     }

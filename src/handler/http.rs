@@ -55,6 +55,7 @@ pub async fn http_view_network(State(state): State<RepositoryType>, Extension(ro
 
 pub async fn http_view_devices(
     State(state): State<RepositoryType>,
+    Extension(role): Extension<Role>,
     Path(network_id): Path<Uuid>,
 ) -> impl IntoResponse {
     let state = state.lock().await;
@@ -73,6 +74,8 @@ pub async fn http_view_devices(
     con.insert("block", "device");
     con.insert("network", &network.first());
     con.insert("devices", &devices);
+    con.insert("role", &role);
+
     let tera = TEMPLATES.lock().await;
     Html(tera.render("index.html", &con).unwrap()).into_response()
 }

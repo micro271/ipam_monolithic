@@ -62,6 +62,12 @@ pub async fn update(
     }
     let state = state.lock().await;
 
+    if let Some(x) = &device.status {
+        if x != &Status::Unknown {
+            return Err(ResponseError::StatusCode(StatusCode::BAD_REQUEST));
+        }
+    }
+
     if device.network_id.is_some() || device.ip.is_some() {
         let ip_to_delete: IpAddr;
 
