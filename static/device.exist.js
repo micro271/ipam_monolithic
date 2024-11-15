@@ -26,17 +26,7 @@ const reserve_ip = (event) => {
     const status = father.querySelector("#data_status");
     const ip = father.querySelector('.popover-header').textContent;
     const ip_ = ip.replaceAll('.','_');
-    const button_reserved = document.getElementById(ip_);
-    const svg = document.getElementById(`svg_${ip_}`);
-    const data_status = father.querySelector("#data_status");
-
-    if (svg.getAttribute('class').includes('reserve')) {
-        data_status.innerHTML = "Reserved";
-    }
-
-    if (!(status.textContent === "Unknown") && button_reserved) {
-        button_reserved.remove();
-    }
+    const button_reserved = document.getElementById(ip_);    
     const network_id = document.getElementById('network_id').textContent;
 
     if (button_reserved){
@@ -53,9 +43,7 @@ const reserve_ip = (event) => {
             }
             const resp = await send_data(data);
             if (resp.ok) {
-                svg.classList = 'svg-reserve';
-                data_status.innerHTML = "Reserved";
-                event.target.remove();
+                location.reload(true)
             }
         })
     }
