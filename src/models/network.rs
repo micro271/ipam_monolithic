@@ -1,5 +1,9 @@
 use ipnet::IpNet;
-use serde::{de::{self, Visitor}, Deserialize, Serialize};
+use libipam::type_net::host_count::HostCount;
+use serde::{
+    de::{self, Visitor},
+    Deserialize, Serialize,
+};
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct UpdateNetwork {
@@ -13,8 +17,9 @@ pub struct Network {
     pub vlan: Option<Vlan>,
     pub network: IpNet,
     pub description: Option<String>,
-    pub available: u128,
-    pub used: u32,
+    pub available: HostCount,
+    pub used: HostCount,
+    pub free: HostCount,
 }
 
 impl std::ops::Deref for Vlan {
@@ -68,29 +73,35 @@ impl<'de> Deserialize<'de> for Vlan {
     where
         D: serde::Deserializer<'de>,
     {
-        deserializer.deserialize_any(VlanVisitor)
+        deserializer.deserialize_any(VlanVisitor(()))
     }
 }
 
-struct VlanVisitor;
+struct VlanVisitor(());
 
 impl<'de> Visitor<'de> for VlanVisitor {
-
     type Value = Vlan;
 
     fn visit_u16<E>(self, v: u16) -> Result<Self::Value, E>
-        where
-            E: serde::de::Error, {
+    where
+        E: serde::de::Error,
+    {
         Ok(Vlan(v))
     }
-    
+
     fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
         formatter.write_str("a valid VLAN ID as a u16 or a string representing a u16")
     }
 
     fn visit_str<E>(self, v: &str) -> Result<Self::Value, E>
-        where
-            E: serde::de::Error, {
-        v.parse::<u16>().map(Vlan).map_err(|_| de::Error::invalid_value(de::Unexpected::Str(v), &"An string that representing a valid Vlan id"))
+    where
+        E: serde::de::Error,
+    {
+        v.parse::<u16>().map(Vlan).map_err(|_| {
+            de::Error::invalid_value(
+                de::Unexpected::Str(v),
+                &"An string that representing a valid Vlan id",
+            )
+        })
     }
 }

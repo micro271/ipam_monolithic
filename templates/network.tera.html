@@ -1,7 +1,5 @@
 
 {% block networks %}
-
-    <h1> {{ title }} </h1>
     {% if networks | length > 0 %}
         <table class="table table-hover text-center align-middle" id="table_main">
             <thead>
@@ -11,8 +9,9 @@
                     <th scope="col">network</th>
                     <th scope="col">vlan</th>
                     <th scope="col">description</th>
-                    <th scope="col">available</th>
+                    <th scope="col d-none d-lg-table-cell">available</th>
                     <th scope="col">used</th>
+                    <th scope="col">free</th>
                     <th colspan="{% if role == 'Admin' %}3{%else%}1{% endif %}"></th>
                 </tr>
             </thead>
@@ -20,13 +19,14 @@
                 {% for net in networks %}
                     <tr>
                         <th scope="row" class="d-none d-lg-table-cell">{{loop.index}}</th>
-                        <td class="d-none d-lg-table-cell">{{ net.id }}</td>
-                        <td>{{ net.network }}</td>
-                        <td>{% if net.vlan %}{{net.vlan}}{% endif %}</td>
-                        <td>{{ net.description }}</td>
-                        <td>{{ net.available }}</td>
-                        <td>{{ net.used }}</td>
-                        <td class="text-center"><a href="/devices/{{net.id}}">Devices</a></td>
+                        <td class="d-none d-lg-table-cell">{{ net.0.id }}</td>
+                        <td>{{ net.0.network }}</td>
+                        <td>{% if net.0.vlan %}{{net.0.vlan}}{% endif %}</td>
+                        <td>{{ net.0.description }}</td>
+                        <td class="d-none d-lg-table-cell">{% if net.1 %}<span class="fw-bold">+</span>{% endif %} {{ net.0.available }}</td>
+                        <td>{{ net.0.used }}</td>
+                        <td>{% if net.1 %}<span class="fw-bold">+</span>{% endif %} {{ net.0.free }}</td>
+                        <td class="text-center"><a href="/devices/{{net.0.id}}">Devices</a></td>
                         {% if role == 'Admin' %}
                             <td class="text-center"><button type="button" class="btn btn-primary" onclick="modify_network(event)" data-type-button="modify" data-row="{{loop.index}}">Modify</button></td>
                             <td class="text-center"><button type="button" class="btn btn-danger" data-type-button="rm" data-row="{{loop.index}}">RM</button></td>

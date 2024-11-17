@@ -148,7 +148,7 @@ const send_one = async (event) => {
     const table = document.getElementById(ID_NEW_NETWORK_TABLE);
     const row = table.rows[row_numner];
     const json = get_data_network_to_send(row);
-    console.log(json)
+    
     if (json) {
         const data = {
             body: JSON.stringify(json),
@@ -161,13 +161,16 @@ const send_one = async (event) => {
             row.remove();
             if (table.rows.length == 1) {
                 table.remove()
+                location.reload()
+            } else if (table.rows.length == 2) {
+                const btn  =document.getElementById(ID_CONTAINER_BUTTONS_ALL);
+                if (btn) {
+                    btn.remove()
+                }
             }
-            if (table.rows.length == 2) {
-                document.getElementById(ID_CONTAINER_BUTTONS_ALL).remove()
-            }
-            if (!document.getElementById(ID_TABLE_CURRENT_NETWORKS || !document.contains(table))) {
-                location.reload(true);
-            }
+            reorganize_rows(table)
+
+            // TODO! add_row_table_main() When we send the data and the response is OK, if the table has some rows, we append the new data to the main table
         }
     }
 }
@@ -284,4 +287,66 @@ if (table) {
             }
         });
     });
+}
+
+const add_row_table_main = async (id) => {
+    const resp = await fetch(`/api/network/${id}`);
+    if (resp.ok) {
+        const {id, vlan, network, description, available, used, free} = await resp.json();
+        const table = document.getElementById(ID_TABLE_CURRENT_NETWORKS);
+        if (table) {
+            const row = table.insertRow();
+            const th = document.createElement('th');
+            th.scope = "row";
+            th.classList = 'd-none d-lg-table-cell';
+
+            th.appendChild(th);
+            const td_id = row.insertCell();
+            td_id.classList = 'd-none d-lg-table-cell';
+            td_id.innerHTML = id;
+
+            const td_network = row.insertCell();
+            td_network.innerHTML = network;
+
+            const td_vlan = row.insertCell();
+            if (vlan) {
+                td_vlan.innerHTML = vlan;
+            }
+
+            const td_desc = row.insertCell();
+            td_desc.innerHTML = description;
+
+            const td_avl = row.insertCell();
+            td_avl = available;
+
+            const td_used = row.insertCell();
+            td_used.innerHTML = used;
+
+            const td_free = row.insertCell();
+            td_free.innerHTML = free;
+
+            const td_button_device = row.insertCell();
+            const anchor_device = document.createElement('a');
+            anchor_device.href = `/device/${network}`
+            td_button_device.appendChild(anchor_device)
+
+            const len = table.rows.length;
+            const td_button_modify = row.insertCell();
+            const button_modify = document.createElement('button');
+            button_modify.type = 'button';
+            button_modify.classList = 'btn btn-primary';
+            button_modify.setAttribute('data-type-button','modify');
+            button_modify.setAttribute('data-row', len+1);
+            td_button_modify.appendChild(button_modify);
+
+
+            const td_button_rm = row.insertCell();
+            const button_rm = document.createElement('button');
+            button_rm.type = 'button';
+            button_rm.classList = 'btn btn-danger';
+            button_rm.setAttribute('data-type-button','rm');
+            button_rm.setAttribute('data-row', len+1);
+            td_button_rm.appendChild(button_rm);
+        }
+    }
 }

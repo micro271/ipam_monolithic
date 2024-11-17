@@ -3,10 +3,10 @@ use crate::models::network::*;
 
 pub async fn create(
     State(state): State<RepositoryType>,
-    Extension(role): Extension<Role>,
+    Extension(claim): Extension<Claims>,
     Json(netw): Json<models_data_entry::Network>,
 ) -> Result<impl IntoResponse, ResponseError> {
-    if role != Role::Admin {
+    if claim.role != Role::Admin {
         return Err(ResponseError::Unauthorized);
     }
 
@@ -31,11 +31,11 @@ pub async fn get_one(
 
 pub async fn update(
     State(state): State<RepositoryType>,
-    Extension(role): Extension<Role>,
+    Extension(claim): Extension<Claims>,
     Path(id): Path<Uuid>,
     Json(network): Json<UpdateNetwork>,
 ) -> Result<impl IntoResponse, ResponseError> {
-    if role != Role::Admin {
+    if claim.role != Role::Admin {
         return Err(ResponseError::Unauthorized);
     }
 
@@ -89,10 +89,10 @@ pub async fn get_all(
 
 pub async fn delete(
     State(state): State<RepositoryType>,
-    Extension(role): Extension<Role>,
+    Extension(claim): Extension<Claims>,
     Path(id): Path<Uuid>,
 ) -> Result<impl IntoResponse, ResponseError> {
-    if role != Role::Admin {
+    if claim.role != Role::Admin {
         return Err(ResponseError::Unauthorized);
     }
 

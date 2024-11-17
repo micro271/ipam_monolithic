@@ -1,6 +1,7 @@
 use super::device::*;
 use super::{network::*, *};
 use ipnet::IpNet;
+use libipam::type_net::host_count::HostCount;
 use std::{
     collections::HashMap,
     {net::IpAddr, vec},
@@ -62,6 +63,7 @@ impl Table for Network {
             "available",
             "used",
             "vlan",
+            "free",
             "description",
         ]
     }
@@ -72,7 +74,7 @@ impl Table for Network {
 
     fn query_insert() -> String {
         format!(
-            "INSERT INTO {} (id, network, available, used, vlan, description) VALUES ($1, $2, $3, $4, $5, $6)",
+            "INSERT INTO {} (id, network, available, used, free, vlan, description) VALUES ($1, $2, $3, $4, $5, $6, $7)",
             Self::name()
         )
     }
@@ -83,6 +85,7 @@ impl Table for Network {
             self.network.into(),
             self.available.into(),
             self.used.into(),
+            self.free.into(),
             self.vlan.into(),
             self.description.into(),
         ]
@@ -212,24 +215,15 @@ pub enum TypeTable {
     Uuid(Uuid),
     OptionString(Option<String>),
     Status(device::Status),
-    Int32(i32),
+    HostCount(u32),
     Role(user::Role),
-    Float64(f64),
     OptionVlan(Option<i32>),
-    Bytes(Option<Vec<u8>>),
-}
-
-
-impl From<u128> for TypeTable
-{
-    fn from(value: u128) -> Self {
-        Self::Bytes(bincode::serialize(&value).ok())
-    }
+    BytesOption(Option<Vec<u8>>),
 }
 
 impl From<Option<Credential>> for TypeTable {
     fn from(value: Option<Credential>) -> Self {
-        Self::Bytes(value.map(|x| bincode::serialize(&x).unwrap()))
+        Self::BytesOption(value.map(|x| bincode::serialize(&x).unwrap()))
     }
 }
 
@@ -269,39 +263,9 @@ impl From<IpNet> for TypeTable {
     }
 }
 
-impl From<u8> for TypeTable {
-    fn from(value: u8) -> Self {
-        Self::Int32(value as i32)
-    }
-}
-
-impl From<u16> for TypeTable {
-    fn from(value: u16) -> Self {
-        Self::Int32(value as i32)
-    }
-}
-
-impl From<u32> for TypeTable {
-    fn from(value: u32) -> Self {
-        Self::Int32(value as i32)
-    }
-}
-
-impl From<i8> for TypeTable {
-    fn from(value: i8) -> Self {
-        Self::Int32(value as i32)
-    }
-}
-
-impl From<i16> for TypeTable {
-    fn from(value: i16) -> Self {
-        Self::Int32(value as i32)
-    }
-}
-
-impl From<i32> for TypeTable {
-    fn from(value: i32) -> Self {
-        Self::Int32(value)
+impl From<HostCount> for TypeTable {
+    fn from(value: HostCount) -> Self {
+        Self::HostCount(*value)
     }
 }
 
@@ -320,11 +284,5 @@ impl From<Option<String>> for TypeTable {
 impl From<device::Status> for TypeTable {
     fn from(value: device::Status) -> Self {
         Self::Status(value)
-    }
-}
-
-impl From<f32> for TypeTable {
-    fn from(value: f32) -> Self {
-        Self::Float64(value as f64)
     }
 }

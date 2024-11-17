@@ -45,4 +45,3 @@ impl Table for User {
         ]
     }
 }
-

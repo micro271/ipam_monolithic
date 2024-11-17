@@ -5,8 +5,9 @@
             <li class="list-group-item"><span class="font-monospace">network:</span> <span class="fw-bold">{{network.network}}</span></li>
             <li class="list-group-item"><span class="font-monospace">vlan:</span> {{network.vlan}}</li>
             <li class="list-group-item"><span class="font-monospace">description:</span> {{network.description}}</li>
-            <li class="list-group-item"><span class="font-monospace">available:</span> {{network.available}}</li>
+            <li class="list-group-item"><span class="font-monospace">available:</span> {%if overflow_prefix %}<span class="fw-bold">+</span>{% endif %}{{network.available}}</li>
             <li class="list-group-item"><span class="font-monospace">used:</span> {{network.used}}</li>
+            <li class="list-group-item"><span class="font-monospace">free:</span> {% if overflow_prefix %}<span class="fw-bold">+</span>{% endif %}{{network.free}}</li>
           </ul>
     </div>
     <section class="d-flex justify-content-between align-content-stretch flex-wrap">

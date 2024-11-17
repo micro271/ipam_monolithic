@@ -7,6 +7,7 @@ use axum::{
     response::IntoResponse,
 };
 use ipnet::IpNet;
+use libipam::type_net::host_count::{HostCount, Prefix};
 use serde::{Deserialize, Serialize};
 use std::net::IpAddr;
 use uuid::Uuid;
@@ -27,24 +28,19 @@ pub struct Network {
 impl From<Network> for network::Network {
     fn from(value: Network) -> Self {
         let ip = &value.network;
-        let avl = if (ip.max_prefix_len() - ip.prefix_len()) < 2 {
-            0
-        } else {
-            (2_u128.pow((ip.max_prefix_len() - ip.prefix_len()) as u32 )) - 2
-        };
 
         Self {
             id: Uuid::new_v4(),
             network: {
-                
                 let tmp = value.network;
                 let network = tmp.network();
                 let prefix = tmp.prefix_len();
                 format!("{}/{}", network, prefix).parse().unwrap()
             },
             description: value.description,
-            available: avl,
-            used: 0,
+            free: HostCount::new(Prefix::from(ip)),
+            available: HostCount::new(Prefix::from(ip)),
+            used: 0.into(),
             vlan: value.vlan,
         }
     }
@@ -81,7 +77,7 @@ pub fn create_all_devices(network: IpNet, id: Uuid) -> Option<Vec<device::Device
     if network.addr().is_ipv6() {
         return None;
     }
-    
+
     let ips = network.hosts().collect::<Vec<IpAddr>>();
     let mut resp = Vec::new();
     for ip in ips {

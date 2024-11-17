@@ -4,9 +4,11 @@ mod models;
 mod services;
 mod trace_layer;
 
-
 use axum::{
-    middleware, response::{IntoResponse, Redirect}, routing::{delete, get, post, put}, serve, Router
+    middleware,
+    response::{IntoResponse, Redirect},
+    routing::{delete, get, post, put},
+    serve, Router,
 };
 use database::SqliteRepository;
 use handler::*;
@@ -67,8 +69,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .route("/", get(http::http_view_network))
         .route("/devices/:network_id", get(http::http_view_devices))
         .route("/offices", get(http::offices))
-        .route("/favicon.ico", get(|| async {Redirect::to("/static/favicon.ico")
-        .into_response()}));
+        .route(
+            "/favicon.ico",
+            get(|| async { Redirect::to("/static/favicon.ico").into_response() }),
+        );
 
     let app = Router::new()
         .nest("/", web)
@@ -81,7 +85,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             tower::ServiceBuilder::new()
                 .layer(CompressionLayer::new().br(true).gzip(true).deflate(true))
                 .layer(trace_layer)
-                .into_inner()
+                .into_inner(),
         );
 
     serve(lst, app).await?;

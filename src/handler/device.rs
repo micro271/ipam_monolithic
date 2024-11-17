@@ -5,10 +5,10 @@ use std::net::IpAddr;
 
 pub async fn create(
     State(state): State<RepositoryType>,
-    Extension(role): Extension<Role>,
+    Extension(claim): Extension<Claims>,
     Json(device): Json<models_data_entry::Device>,
 ) -> Result<impl IntoResponse, ResponseError> {
-    if role != Role::Admin {
+    if claim.role != Role::Admin {
         return Err(ResponseError::Unauthorized);
     }
 
@@ -19,10 +19,10 @@ pub async fn create(
 
 pub async fn create_all_devices(
     State(state): State<RepositoryType>,
-    Extension(role): Extension<Role>,
+    Extension(claim): Extension<Claims>,
     Path(network_id): Path<Uuid>,
 ) -> Result<impl IntoResponse, ResponseError> {
-    if role != Role::Admin {
+    if claim.role != Role::Admin {
         return Err(ResponseError::Unauthorized);
     }
 
@@ -31,7 +31,7 @@ pub async fn create_all_devices(
         .get::<Network>(Some(HashMap::from([("id", network_id.into())])))
         .await?
         .remove(0);
-    
+
     match models_data_entry::create_all_devices(network.network, network_id) {
         Some(e) => Ok(state.insert::<Device>(e).await?),
         None => Err(ResponseError::StatusCode(StatusCode::NO_CONTENT)),
@@ -53,17 +53,22 @@ pub async fn get_all(
 
 pub async fn update(
     State(state): State<RepositoryType>,
-    Extension(role): Extension<Role>,
+    Extension(claim): Extension<Claims>,
     Query(query_params::ParamDevice { ip, network_id }): Query<query_params::ParamDevice>,
     Json(device): Json<UpdateDevice>,
 ) -> Result<impl IntoResponse, ResponseError> {
-    if role != Role::Admin {
+    if claim.role != Role::Admin {
         return Err(ResponseError::Unauthorized);
     }
     let state = state.lock().await;
 
-    let current_data = state.get::<Device>(Some(HashMap::from([("ip",ip.into()), ("network_id",network_id.into())]))).await?;
-    if let Some(false) = current_data.first().map(|x| &x.status ).and_then(|x| Some(x == &Status::Unknown)) {
+    let current_data = state
+        .get::<Device>(Some(HashMap::from([
+            ("ip", ip.into()),
+            ("network_id", network_id.into()),
+        ])))
+        .await?;
+    if let Some(false) = current_data.first().map(|x| x.status == Status::Unknown) {
         return Err(ResponseError::StatusCode(StatusCode::BAD_REQUEST));
     }
     if device.network_id.is_some() || device.ip.is_some() {
@@ -131,10 +136,10 @@ pub async fn get_one(
 
 pub async fn delete(
     State(state): State<RepositoryType>,
-    Extension(role): Extension<Role>,
+    Extension(claim): Extension<Claims>,
     Query((ip, network_id)): Query<(IpAddr, Uuid)>,
 ) -> Result<impl IntoResponse, ResponseError> {
-    if role != Role::Admin {
+    if claim.role != Role::Admin {
         return Err(ResponseError::Unauthorized);
     }
 
