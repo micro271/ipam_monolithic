@@ -157,7 +157,9 @@ const send_one = async (event) => {
             headers: {'Content-type': 'application/json'}
         }
         const resp = await send_data(data);
-        if (resp.ok) {
+        const resp_data = await resp.json();
+        console.log(resp_data)
+        if (resp_data.status === 201) {
             row.remove();
             if (table.rows.length == 1) {
                 table.remove()
@@ -169,8 +171,10 @@ const send_one = async (event) => {
                 }
             }
             reorganize_rows(table)
-
+            add_row_table_main(resp_data.data)
             // TODO! add_row_table_main() When we send the data and the response is OK, if the table has some rows, we append the new data to the main table
+        } else {
+            console.log(resp_data)
         }
     }
 }
@@ -218,9 +222,9 @@ const reorganize_rows = (table) => {
             const th = row.querySelector('th');
             th.innerHTML = index+1;
         }
-        if (rows.length == 1) {
-            document.getElementById(ID_CONTAINER_BUTTONS_ALL).remove();
-        }
+        // if (rows.length == 1) {
+        //     document.getElementById(ID_CONTAINER_BUTTONS_ALL).remove();
+        // }
     }
 }
 
@@ -233,14 +237,16 @@ const send_all_networks = async () => {
             for (const row of rows) {
                 const data = get_data_network_to_send(row);
                 if (data){
-                    const to_send = {
-                        endpoint: '/api/network/create',
+                    const send = await fetch('/api/network/create',{
                         method: 'PUT',
-                        headers : {'Content-type':'application/json'},
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
                         body: JSON.stringify(data)
-                    }
+                    });
+                    const data_resp = await send.json();
                     
-                    if ((await send_data(to_send)).ok) {
+                    if (data_resp.status === 201) {
                         row.remove();
                         reorganize_rows(document.getElementById(ID_NEW_NETWORK_TABLE));
                         if (table_new_network.rows.length == 2) {
@@ -249,6 +255,8 @@ const send_all_networks = async () => {
                                 div_container_buttons.remove();
                             }
                         }
+                        add_row_table_main(data_resp.data)
+
                     }                
                 }
     
@@ -267,86 +275,90 @@ const modifi_network = (event) => {
     // TODO
 }
 
-const table = document.getElementById(ID_TABLE_CURRENT_NETWORKS);
 
+const rm_network = async (event) => {
+    const tg = event.target;
+    const row_number = tg.getAttribute("data-row");
+    const row = table.rows[row_number];
+    const network_id = row.cells[1].textContent;
+    const resp = await fetch(`/api/network/${network_id}`,{
+        method: 'DELETE'
+    });
+    if (resp.ok) {
+        row.remove()
+        reorganize_rows(table)
+    }
+}
+const table = document.getElementById(ID_TABLE_CURRENT_NETWORKS);
 if (table) {
     const buttons_rm = table.querySelectorAll('[data-type-button="rm"]');
     
     Array.from(buttons_rm).forEach(button => {
-        button.addEventListener('click',async (event) => {
-            const tg = event.target;
-            const row_number = tg.getAttribute("data-row");
-            const row = table.rows[row_number];
-            const network_id = row.cells[1].textContent;
-            const resp = await fetch(`/api/network/${network_id}`,{
-                method: 'DELETE'
-            });
-            if (resp.ok) {
-                row.remove()
-                reorganize_rows(table)
-            }
-        });
+        button.addEventListener('click', rm_network);
     });
 }
-
-const add_row_table_main = async (id) => {
-    const resp = await fetch(`/api/network/${id}`);
-    if (resp.ok) {
-        const {id, vlan, network, description, available, used, free} = await resp.json();
-        const table = document.getElementById(ID_TABLE_CURRENT_NETWORKS);
-        if (table) {
-            const row = table.insertRow();
+const add_row_table_main = (rows) => {
+    const table = document.getElementById(ID_TABLE_CURRENT_NETWORKS);
+    if (rows && table) {
+        for (const row of Array.from(rows)) {
+            const len = table.rows.length;
+            const {id, vlan, network, description, available, used, free} = row;
+            const new_row = table.insertRow();
             const th = document.createElement('th');
+            th.textContent = len;
             th.scope = "row";
             th.classList = 'd-none d-lg-table-cell';
 
-            th.appendChild(th);
-            const td_id = row.insertCell();
+            new_row.appendChild(th);
+            const td_id = new_row.insertCell();
             td_id.classList = 'd-none d-lg-table-cell';
-            td_id.innerHTML = id;
+            td_id.textContent= id;
 
-            const td_network = row.insertCell();
+            const td_network = new_row.insertCell();
             td_network.innerHTML = network;
 
-            const td_vlan = row.insertCell();
+            const td_vlan = new_row.insertCell();
             if (vlan) {
-                td_vlan.innerHTML = vlan;
+                td_vlan.textContent= vlan;
             }
 
-            const td_desc = row.insertCell();
-            td_desc.innerHTML = description;
+            const td_desc = new_row.insertCell();
+            td_desc.textContent= description;
 
-            const td_avl = row.insertCell();
-            td_avl = available;
+            const td_avl = new_row.insertCell();
+            td_avl.textContent = available;
 
-            const td_used = row.insertCell();
-            td_used.innerHTML = used;
+            const td_used = new_row.insertCell();
+            td_used.textContent= used;
 
-            const td_free = row.insertCell();
-            td_free.innerHTML = free;
+            const td_free = new_row.insertCell();
+            td_free.textContent= free;
 
-            const td_button_device = row.insertCell();
+            const td_button_device = new_row.insertCell();
             const anchor_device = document.createElement('a');
-            anchor_device.href = `/device/${network}`
-            td_button_device.appendChild(anchor_device)
+            anchor_device.href = `/devices/${id}`;
+            anchor_device.textContent = 'Devices';
+            td_button_device.appendChild(anchor_device);
 
-            const len = table.rows.length;
-            const td_button_modify = row.insertCell();
+            
+            const td_button_modify = new_row.insertCell();
             const button_modify = document.createElement('button');
+            button_modify.textContent = "Modify";
             button_modify.type = 'button';
             button_modify.classList = 'btn btn-primary';
             button_modify.setAttribute('data-type-button','modify');
-            button_modify.setAttribute('data-row', len+1);
+            button_modify.setAttribute('data-row', len);
             td_button_modify.appendChild(button_modify);
 
 
-            const td_button_rm = row.insertCell();
+            const td_button_rm = new_row.insertCell();
             const button_rm = document.createElement('button');
+            button_rm.textContent = "RM";
             button_rm.type = 'button';
             button_rm.classList = 'btn btn-danger';
             button_rm.setAttribute('data-type-button','rm');
-            button_rm.setAttribute('data-row', len+1);
-            td_button_rm.appendChild(button_rm);
+            button_rm.setAttribute('data-row', len);
+            td_button_rm.appendChild(button_rm);           
         }
     }
 }

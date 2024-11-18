@@ -17,7 +17,6 @@ const reserve_ip = (event) => {
     console.log(event.target.parentNode)
 }
 
-console.log(user_id);
 
 [...popoverTriggerList].map(popOver => popOver.addEventListener('shown.bs.popover', () => {
     const pop_over = bootstrap.Popover.getInstance(popOver)
