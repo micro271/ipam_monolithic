@@ -11,7 +11,7 @@ pub struct UpdateNetwork {
     pub description: Option<String>,
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct Network {
     pub id: uuid::Uuid,
     pub vlan: Option<Vlan>,
@@ -34,7 +34,7 @@ impl std::ops::DerefMut for Vlan {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Vlan(u16);
 
 impl Vlan {

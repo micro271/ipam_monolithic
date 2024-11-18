@@ -1,11 +1,4 @@
-use crate::{
-    database::repository::QueryResult,
-    models::{device, network},
-};
-use axum::{
-    http::{self, Response, StatusCode},
-    response::IntoResponse,
-};
+use crate::models::{device, network};
 use ipnet::IpNet;
 use libipam::type_net::host_count::{HostCount, Prefix};
 use serde::{Deserialize, Serialize};
@@ -97,25 +90,5 @@ pub fn create_all_devices(network: IpNet, id: Uuid) -> Option<Vec<device::Device
         Some(resp)
     } else {
         None
-    }
-}
-
-impl IntoResponse for QueryResult {
-    fn into_response(self) -> axum::response::Response {
-        let status = match &self {
-            QueryResult::Insert(_) => StatusCode::CREATED,
-            _ => StatusCode::OK,
-        };
-        let body = serde_json::json!({
-            "rows_affects":self.unwrap()
-        })
-        .to_string();
-
-        Response::builder()
-            .header(http::header::CONTENT_TYPE, "application/json")
-            .status(status)
-            .body(body)
-            .unwrap_or_default()
-            .into_response()
     }
 }

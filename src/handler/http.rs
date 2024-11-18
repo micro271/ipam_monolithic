@@ -90,8 +90,8 @@ pub async fn http_view_devices(
     con.insert("block", "device");
     con.insert("network", &network.first());
     con.insert("devices", &devices);
-    con.insert("role", &claim.role);
     con.insert("user_id", &claim.id);
+    con.insert("role", &claim.role);
     con.insert("ipv4", &network.first().map(|x| x.network.addr().is_ipv4()));
     con.insert("overflow_prefix", &overflow);
 
@@ -105,8 +105,8 @@ pub async fn offices(
 ) -> impl IntoResponse {
     let mut cont = Context::new();
     cont.insert("block", "office");
-    cont.insert("role", &claim.role);
     cont.insert("user_id", &claim.id);
+    cont.insert("role", &claim.role);
 
     let state = state.lock().await;
     let ofs = state.get::<Office>(None).await.unwrap_or_default();

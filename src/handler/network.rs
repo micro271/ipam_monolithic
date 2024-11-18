@@ -1,13 +1,15 @@
 use super::*;
 use crate::models::network::*;
-
+use libipam::response_error::ResponseError;
 pub async fn create(
     State(state): State<RepositoryType>,
     Extension(claim): Extension<Claims>,
     Json(netw): Json<models_data_entry::Network>,
 ) -> Result<impl IntoResponse, ResponseError> {
     if claim.role != Role::Admin {
-        return Err(ResponseError::Unauthorized);
+        return Err(ResponseError::builder()
+            .status(StatusCode::UNAUTHORIZED)
+            .build());
     }
 
     let state = state.lock().await;
@@ -36,7 +38,9 @@ pub async fn update(
     Json(network): Json<UpdateNetwork>,
 ) -> Result<impl IntoResponse, ResponseError> {
     if claim.role != Role::Admin {
-        return Err(ResponseError::Unauthorized);
+        return Err(ResponseError::builder()
+            .status(StatusCode::UNAUTHORIZED)
+            .build());
     }
 
     let state = state.lock().await;
@@ -45,34 +49,12 @@ pub async fn update(
     // Soon: Update all devices
     //     * Only if the prefix of the new network is bigger than or smaller than the current network
 
-    let tmp = state
+    let _tmp = state
         .update::<Network, _>(network, Some(HashMap::from([("id", id.into())])))
         .await?;
-    match state
+    Ok(state
         .delete::<crate::models::device::Device>(Some(HashMap::from([("network_id", id.into())])))
-        .await
-    {
-        Ok(e) => Ok(Json(json!({
-            "update": {
-                "row_affect": tmp.unwrap(),
-            },
-            "delete": {
-                "row_affect": e.unwrap()
-            }
-        }))),
-        Err(e) => Err(ResponseError::Custom {
-            body: json!({
-                "update": {
-                    "rows_affect": tmp.unwrap()
-                },
-                "delete": {
-                    "rows_affect": ResponseError::from(e).to_string()
-                }
-            })
-            .to_string(),
-            status: StatusCode::OK,
-        }),
-    }
+        .await?)
 }
 
 pub async fn get_all(
@@ -93,7 +75,9 @@ pub async fn delete(
     Path(id): Path<Uuid>,
 ) -> Result<impl IntoResponse, ResponseError> {
     if claim.role != Role::Admin {
-        return Err(ResponseError::Unauthorized);
+        return Err(ResponseError::builder()
+            .status(StatusCode::UNAUTHORIZED)
+            .build());
     }
 
     let state = state.lock().await;

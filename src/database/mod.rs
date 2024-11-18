@@ -3,7 +3,7 @@ pub mod repository;
 
 use crate::models::utils::*;
 use futures::stream::StreamExt;
-use repository::*;
+use repository::{error::RepositoryError, QueryResult, Repository, ResultRepository};
 use sqlx::sqlite::{SqliteConnectOptions, SqliteJournalMode, SqlitePool, SqliteRow};
 use std::{
     collections::HashMap,
@@ -78,18 +78,19 @@ impl SqliteRepository {
 }
 
 impl Repository for SqliteRepository {
-    fn insert<'a, T>(&'a self, data: Vec<T>) -> ResultRepository<'a, QueryResult>
+    fn insert<'a, T>(&'a self, data: Vec<T>) -> ResultRepository<'a, QueryResult<T>>
     where
-        T: Table + 'a + Send + Debug,
+        T: Table + 'a + Send + Debug + Clone,
     {
         let resp = async {
             let mut tx = match self.begin().await {
                 Ok(e) => e,
                 Err(e) => return Err(RepositoryError::Sqlx(e.to_string())),
             };
-
+            let mut resp_data = Vec::new();
             let mut count = 0;
             for data in data {
+                resp_data.push(data.clone());
                 let query = T::query_insert();
                 let mut tmp = sqlx::query(&query);
                 let data = T::get_fields(data);
@@ -120,7 +121,10 @@ impl Repository for SqliteRepository {
             }
 
             match tx.commit().await {
-                Ok(_) => Ok(QueryResult::Insert(count)),
+                Ok(_) => Ok(QueryResult::Insert {
+                    row_affect: count,
+                    data: resp_data,
+                }),
                 Err(e) => Err(RepositoryError::Sqlx(e.to_string())),
             }
         };
@@ -204,7 +208,7 @@ impl Repository for SqliteRepository {
         &'a self,
         updater: U,
         condition: Option<HashMap<&'a str, TypeTable>>,
-    ) -> ResultRepository<'a, QueryResult>
+    ) -> ResultRepository<'a, QueryResult<T>>
     where
         T: Table + 'a + Send + Debug,
         U: Updatable<'a> + 'a + Send + Debug,
@@ -279,7 +283,7 @@ impl Repository for SqliteRepository {
     fn delete<'a, T>(
         &'a self,
         condition: Option<HashMap<&'a str, TypeTable>>,
-    ) -> ResultRepository<'a, QueryResult>
+    ) -> ResultRepository<'a, QueryResult<T>>
     where
         T: Table + 'a + Send + Debug,
     {

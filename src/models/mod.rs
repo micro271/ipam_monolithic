@@ -8,7 +8,7 @@ use uuid::Uuid;
 
 pub mod office {
     use super::*;
-    #[derive(Debug, Deserialize, Serialize)]
+    #[derive(Debug, Deserialize, Serialize, Clone)]
     pub struct Office {
         pub id: Uuid,
         pub name: String,

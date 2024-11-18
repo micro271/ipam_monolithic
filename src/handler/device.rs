@@ -1,15 +1,22 @@
 use super::*;
 use crate::models::{device::*, network::*};
+use axum::http::Uri;
+use libipam::response_error::ResponseError;
 
 use std::net::IpAddr;
 
 pub async fn create(
     State(state): State<RepositoryType>,
     Extension(claim): Extension<Claims>,
+    uri: Uri,
     Json(device): Json<models_data_entry::Device>,
 ) -> Result<impl IntoResponse, ResponseError> {
     if claim.role != Role::Admin {
-        return Err(ResponseError::Unauthorized);
+        return Err(ResponseError::builder()
+            .status(StatusCode::UNAUTHORIZED)
+            .instance(uri.to_string())
+            .detail(format!("User doesn't belong to the {:?} role", Role::Admin))
+            .build());
     }
 
     let state = state.lock().await;
@@ -23,7 +30,9 @@ pub async fn create_all_devices(
     Path(network_id): Path<Uuid>,
 ) -> Result<impl IntoResponse, ResponseError> {
     if claim.role != Role::Admin {
-        return Err(ResponseError::Unauthorized);
+        return Err(ResponseError::builder()
+            .status(StatusCode::UNAUTHORIZED)
+            .build());
     }
 
     let state = state.lock().await;
@@ -34,7 +43,9 @@ pub async fn create_all_devices(
 
     match models_data_entry::create_all_devices(network.network, network_id) {
         Some(e) => Ok(state.insert::<Device>(e).await?),
-        None => Err(ResponseError::StatusCode(StatusCode::NO_CONTENT)),
+        None => Err(ResponseError::builder()
+            .status(StatusCode::NO_CONTENT)
+            .build()),
     }
 }
 
@@ -58,7 +69,9 @@ pub async fn update(
     Json(device): Json<UpdateDevice>,
 ) -> Result<impl IntoResponse, ResponseError> {
     if claim.role != Role::Admin {
-        return Err(ResponseError::Unauthorized);
+        return Err(ResponseError::builder()
+            .status(StatusCode::UNAUTHORIZED)
+            .build());
     }
     let state = state.lock().await;
 
@@ -69,7 +82,9 @@ pub async fn update(
         ])))
         .await?;
     if let Some(false) = current_data.first().map(|x| x.status == Status::Unknown) {
-        return Err(ResponseError::StatusCode(StatusCode::BAD_REQUEST));
+        return Err(ResponseError::builder()
+            .status(StatusCode::BAD_REQUEST)
+            .build());
     }
     if device.network_id.is_some() || device.ip.is_some() {
         let ip_to_delete: IpAddr;
@@ -87,12 +102,16 @@ pub async fn update(
 
         if let Some(ip) = device.ip {
             if !netw_new.network.contains(&ip) {
-                return Err(ResponseError::StatusCode(StatusCode::BAD_REQUEST));
+                return Err(ResponseError::builder()
+                    .status(StatusCode::BAD_REQUEST)
+                    .build());
             }
             ip_to_delete = ip;
         } else {
             if !netw_new.network.contains(&ip) {
-                return Err(ResponseError::StatusCode(StatusCode::CONFLICT));
+                return Err(ResponseError::builder()
+                    .status(StatusCode::CONFLICT)
+                    .build());
             }
             ip_to_delete = ip;
         }
@@ -140,7 +159,9 @@ pub async fn delete(
     Query((ip, network_id)): Query<(IpAddr, Uuid)>,
 ) -> Result<impl IntoResponse, ResponseError> {
     if claim.role != Role::Admin {
-        return Err(ResponseError::Unauthorized);
+        return Err(ResponseError::builder()
+            .status(StatusCode::UNAUTHORIZED)
+            .build());
     }
 
     let state = state.lock().await;

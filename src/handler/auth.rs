@@ -2,25 +2,45 @@ use super::*;
 use crate::services::Claims;
 use axum::{
     extract::Request,
+    http::Uri,
     middleware::Next,
     response::{Redirect, Response},
 };
-use libipam::authentication::{self, create_token, encrypt, verify_passwd};
-
+use libipam::{
+    authentication::{self, create_token, encrypt, verify_passwd},
+    response_error::ResponseError,
+};
+#[axum::debug_handler]
 pub async fn create(
     State(state): State<RepositoryType>,
     Extension(claim): Extension<Claims>,
+    uri: Uri,
     Json(mut user): Json<user::User>,
 ) -> Result<impl IntoResponse, ResponseError> {
     if claim.role != Role::Admin {
-        return Err(ResponseError::Unauthorized);
+        return Err(ResponseError::builder()
+            .status(StatusCode::UNAUTHORIZED)
+            .instance(uri.to_string())
+            .detail(format!(
+                "The user {} doesn't belong to the {:?} role",
+                claim.id,
+                Role::Admin
+            ))
+            .title("User not authorized".to_string())
+            .build());
     }
 
     let state = state.lock().await;
 
     user.password = match encrypt(user.password) {
         Ok(e) => e,
-        Err(_) => return Err(ResponseError::ServerError),
+        Err(e) => {
+            return Err(ResponseError::builder()
+                .status(StatusCode::UNAUTHORIZED)
+                .instance(uri.to_string())
+                .detail(e.to_string())
+                .build())
+        }
     };
 
     Ok(state.insert(vec![user]).await?)
@@ -53,10 +73,14 @@ pub async fn login(
                 );
                 Ok(req)
             }
-            Err(_) => Err(ResponseError::ServerError),
+            Err(_) => Err(ResponseError::builder()
+                .status(StatusCode::INTERNAL_SERVER_ERROR)
+                .build()),
         }
     } else {
-        Err(ResponseError::Unauthorized)
+        Err(ResponseError::builder()
+            .status(StatusCode::UNAUTHORIZED)
+            .build())
     }
 }
 

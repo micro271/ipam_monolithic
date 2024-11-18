@@ -14,7 +14,6 @@ use axum::{
     http::StatusCode,
     response::IntoResponse,
 };
-use error::ResponseError;
 use serde_json::json;
 use std::{collections::HashMap, sync::Arc};
 use tokio::sync::Mutex;

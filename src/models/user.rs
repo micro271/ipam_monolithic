@@ -1,6 +1,6 @@
 use super::*;
 
-#[derive(Deserialize, Serialize, Debug)]
+#[derive(Deserialize, Serialize, Debug, Clone)]
 pub struct User {
     pub id: uuid::Uuid,
     pub username: String,
