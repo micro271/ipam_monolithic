@@ -208,6 +208,25 @@ impl<'a> Updatable<'a> for office::UpdateOffice {
     }
 }
 
+impl<'a> Updatable<'a> for network::UpdateNetworkCount {
+    fn get_pair(self) -> Option<HashMap<&'a str, TypeTable>> {
+        let mut resp = HashMap::new();
+        if let Some(tmp) = self.used {
+            resp.insert("used", tmp.into());
+        }
+
+        if let Some(tmp) = self.free {
+            resp.insert("free", tmp.into());
+        }
+
+        if let Some(tmp) = self.available {
+            resp.insert("available", tmp.into());
+        }
+
+        Some(resp)
+    }
+}
+
 #[derive(Debug)]
 pub enum TypeTable {
     String(String),

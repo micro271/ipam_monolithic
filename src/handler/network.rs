@@ -1,6 +1,7 @@
 use super::*;
-use crate::models::network::*;
-use libipam::response_error::ResponseError;
+use crate::{database::repository::QueryResult, models::network::*};
+use axum::http::Uri;
+use libipam::response_error::{Builder, ResponseError};
 pub async fn create(
     State(state): State<RepositoryType>,
     Extension(claim): Extension<Claims>,
@@ -19,16 +20,20 @@ pub async fn create(
 
 pub async fn get_one(
     State(state): State<RepositoryType>,
+    uri: Uri,
     Path(id): Path<Uuid>,
-) -> Result<impl IntoResponse, ResponseError> {
+) -> Result<QueryResult<Network>, ResponseError> {
     let state = state.lock().await;
     let condition = HashMap::from([("id", id.into())]);
 
-    let network = state.get::<Network>(Some(condition)).await?;
-
-    Ok(Json(json!({
-        "device": network.first()
-    })))
+    Ok(state
+        .get::<Network>(Some(condition))
+        .await
+        .map_err(|x| {
+            let bl: Builder = ResponseError::from(x).into();
+            bl.instance(uri.to_string()).build()
+        })?
+        .into())
 }
 
 pub async fn update(
@@ -59,21 +64,26 @@ pub async fn update(
 
 pub async fn get_all(
     State(state): State<RepositoryType>,
-) -> Result<impl IntoResponse, ResponseError> {
+    uri: Uri,
+) -> Result<QueryResult<Network>, ResponseError> {
     let state = state.lock().await;
 
-    let networks = state.get::<Network>(None).await?;
-
-    Ok(Json(json!({
-        "networks": networks
-    })))
+    state
+        .get::<Network>(None)
+        .await
+        .map(QueryResult::from)
+        .map_err(|x| {
+            let tmp: Builder = ResponseError::from(x).into();
+            tmp.instance(uri.to_string()).build()
+        })
 }
 
 pub async fn delete(
     State(state): State<RepositoryType>,
     Extension(claim): Extension<Claims>,
+    uri: Uri,
     Path(id): Path<Uuid>,
-) -> Result<impl IntoResponse, ResponseError> {
+) -> Result<QueryResult<Network>, ResponseError> {
     if claim.role != Role::Admin {
         return Err(ResponseError::builder()
             .status(StatusCode::UNAUTHORIZED)
@@ -82,7 +92,11 @@ pub async fn delete(
 
     let state = state.lock().await;
 
-    Ok(state
+    state
         .delete::<Network>(Some(HashMap::from([("id", id.into())])))
-        .await?)
+        .await
+        .map_err(|x| {
+            let tmp: Builder = ResponseError::from(x).into();
+            tmp.instance(uri.to_string()).build()
+        })
 }

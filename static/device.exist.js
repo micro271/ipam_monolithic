@@ -42,8 +42,9 @@ const reserve_ip = (event) => {
                 }
             }
             const resp = await send_data(data);
+            console.log(await resp.json());
             if (resp.ok) {
-                location.reload(true)
+                location.reload(true);
             }
         })
     }

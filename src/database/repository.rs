@@ -5,6 +5,7 @@ use axum::{
     response::IntoResponse,
 };
 use error::RepositoryError;
+use serde::Serialize;
 use serde_json::json;
 use sqlx::sqlite::SqliteRow;
 use std::{boxed::Box, collections::HashMap, fmt::Debug, future::Future, pin::Pin};
@@ -42,6 +43,7 @@ pub enum QueryResult<T> {
     Insert { row_affect: u64, data: Vec<T> },
     Update(u64),
     Delete(u64),
+    Select(Vec<T>),
 }
 
 impl<S> IntoResponse for QueryResult<S>
@@ -65,6 +67,14 @@ where
                 }),
                 StatusCode::OK,
             ),
+            Self::Select(elements) => (
+                json!({
+                    "status": 200,
+                    "length": elements.len(),
+                    "data": elements,
+                }),
+                StatusCode::OK,
+            ),
         };
 
         Response::builder()
@@ -73,6 +83,15 @@ where
             .body::<String>(body.to_string())
             .unwrap_or_default()
             .into_response()
+    }
+}
+
+impl<T> From<Vec<T>> for QueryResult<T>
+where
+    T: Table + Serialize,
+{
+    fn from(value: Vec<T>) -> Self {
+        Self::Select(value)
     }
 }
 

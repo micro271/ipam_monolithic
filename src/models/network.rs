@@ -11,6 +11,13 @@ pub struct UpdateNetwork {
     pub description: Option<String>,
 }
 
+#[derive(Debug)]
+pub struct UpdateNetworkCount {
+    pub used: Option<HostCount>,
+    pub free: Option<HostCount>,
+    pub available: Option<HostCount>,
+}
+
 #[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct Network {
     pub id: uuid::Uuid,
