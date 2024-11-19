@@ -63,7 +63,6 @@ if (modal) {
             if (checked_edit_network.checked) {
                 new_data.network = input_network;
             }
-
             if (input_vlan) {
                 new_data.vlan = input_vlan;
             }
@@ -80,12 +79,26 @@ if (modal) {
 
                 const resp_data = await resp.json();
                 if (resp_data.status === 200) {
-                    console.log(resp_data);
+                    const table = document.getElementById("table_main");
+                    if (table) {
+                        const row = table.rows[row_number];
+                        if (row) {
+                            if (new_data.network) {
+                                row.querySelector("[data-name='network']").textContent = data.network;
+                            }
+                            if (new_data.vlan) {
+                                row.querySelector("[data-name='vlan']").textContent = new_data.vlan;
+                            }
+                            if (new_data.description) {
+                                row.querySelector("[data-name='description']").textContent = new_data.description;
+                            }
+                        }
+                    }
                 } else {
                     console.log(resp_data);
                 }
             }
-        })
-    },
-    {once: true})
+        },
+        {once: true})
+    })
 }

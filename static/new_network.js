@@ -208,8 +208,10 @@ const rm_one = (event) => {
     const tg = event.target;
     const row_number = tg.getAttribute("data-row");
     const table = document.getElementById(ID_NEW_NETWORK_TABLE);
-    console.log(table.rows.length);
     table.deleteRow(row_number);
+    if (table.rows.length == 2) {
+        document.getElementById(ID_CONTAINER_BUTTONS_ALL).remove();
+    }
     reorganize_rows(table);
 }
 
@@ -225,9 +227,6 @@ const reorganize_rows = (table) => {
             }
             const th = row.querySelector('th');
             th.innerHTML = index+1;
-        }
-        if (rows.length == 1) {
-            document.getElementById(ID_CONTAINER_BUTTONS_ALL).remove();
         }
     }
 }
