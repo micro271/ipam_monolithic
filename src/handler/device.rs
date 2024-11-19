@@ -1,8 +1,5 @@
 use super::*;
-use crate::{
-    database::repository::QueryResult,
-    models::{device::*, network::*},
-};
+use crate::models::{device::*, network::*};
 use axum::http::Uri;
 use libipam::response_error::{Builder, ResponseError};
 

@@ -9,6 +9,7 @@ use serde::{
 pub struct UpdateNetwork {
     pub network: Option<IpNet>,
     pub description: Option<String>,
+    pub vlan: Option<Vlan>,
 }
 
 #[derive(Debug)]

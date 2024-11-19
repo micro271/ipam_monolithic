@@ -1,5 +1,5 @@
 use super::*;
-use crate::{database::repository::QueryResult, models::network::*};
+use crate::models::network::*;
 use axum::http::Uri;
 use libipam::response_error::{Builder, ResponseError};
 pub async fn create(
@@ -39,6 +39,7 @@ pub async fn get_one(
 pub async fn update(
     State(state): State<RepositoryType>,
     Extension(claim): Extension<Claims>,
+    uri: Uri,
     Path(id): Path<Uuid>,
     Json(network): Json<UpdateNetwork>,
 ) -> Result<impl IntoResponse, ResponseError> {
@@ -57,9 +58,13 @@ pub async fn update(
     let _tmp = state
         .update::<Network, _>(network, Some(HashMap::from([("id", id.into())])))
         .await?;
-    Ok(state
+    state
         .delete::<crate::models::device::Device>(Some(HashMap::from([("network_id", id.into())])))
-        .await?)
+        .await
+        .map_err(|x| {
+            let bl: Builder = ResponseError::from(x).into();
+            bl.instance(uri.to_string()).build()
+        })
 }
 
 pub async fn get_all(

@@ -185,6 +185,10 @@ impl<'a> Updatable<'a> for UpdateNetwork {
             pair.insert("network", tmp.into());
         }
 
+        if let Some(vlan) = self.vlan {
+            pair.insert("vlan", Some(vlan).into());
+        }
+
         if !pair.is_empty() {
             Some(pair)
         } else {

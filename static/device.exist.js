@@ -34,7 +34,7 @@ const reserve_ip = (event) => {
             const data = {
                 endpoint: `/api/device/one?ip=${ip}&network_id=${network_id}`,
                 method: 'PATCH',
-                body: JSON.stringify({
+                body: JSON.stringify({  
                     status: 'Reserved'
                 }),
                 headers: {
