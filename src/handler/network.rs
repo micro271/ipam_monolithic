@@ -55,16 +55,21 @@ pub async fn update(
     // Soon: Update all devices
     //     * Only if the prefix of the new network is bigger than or smaller than the current network
 
-    let _tmp = state
+    if network.network.is_some() {
+        return Err(ResponseError::builder()
+            .title("Update not allowed".to_string())
+            .instance(uri.to_string())
+            .detail(
+                "The function update_network still doesn't support the update for network"
+                    .to_string(),
+            )
+            .status(StatusCode::NOT_IMPLEMENTED)
+            .build());
+    }
+
+    Ok(state
         .update::<Network, _>(network, Some(HashMap::from([("id", id.into())])))
-        .await?;
-    state
-        .delete::<crate::models::device::Device>(Some(HashMap::from([("network_id", id.into())])))
-        .await
-        .map_err(|x| {
-            let bl: Builder = ResponseError::from(x).into();
-            bl.instance(uri.to_string()).build()
-        })
+        .await?)
 }
 
 pub async fn get_all(

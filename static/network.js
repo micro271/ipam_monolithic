@@ -80,11 +80,12 @@ if (modal) {
 
                 const resp_data = await resp.json();
                 if (resp_data.status === 200) {
-                    console.log(resp_data)
+                    console.log(resp_data);
+                } else {
+                    console.log(resp_data);
                 }
             }
-        },
-        {once: true});
-
-    })
+        })
+    },
+    {once: true})
 }

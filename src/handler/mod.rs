@@ -6,7 +6,10 @@ mod models_data_entry;
 pub mod network;
 mod query_params;
 
-use crate::database::{repository::{Repository, QueryResult}, SqliteRepository,};
+use crate::database::{
+    repository::{QueryResult, Repository},
+    SqliteRepository,
+};
 use crate::models::{user::Role, *};
 use crate::services::Claims;
 use axum::{

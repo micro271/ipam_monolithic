@@ -141,7 +141,7 @@ impl Repository for SqliteRepository {
         Box::pin(async {
             let mut query = format!("SELECT * FROM {}", T::name());
             let mut vec_resp = Vec::new();
-
+            tracing::debug!("Get element % Condition select {:?} %", column_data);
             match column_data {
                 Some(col) if !col.is_empty() => {
                     let cols = T::columns();
@@ -214,6 +214,11 @@ impl Repository for SqliteRepository {
         U: Updatable<'a> + 'a + Send + Debug,
     {
         let tmp = async move {
+            tracing::debug!(
+                "Update element % new_data: {:?} - condition {:?} %",
+                updater,
+                condition
+            );
             if let Some(pair) = updater.get_pair() {
                 let cols = T::columns();
 
@@ -270,7 +275,10 @@ impl Repository for SqliteRepository {
                 }
 
                 match sql.execute(&self.0).await {
-                    Ok(e) => Ok(QueryResult::Update(e.rows_affected())),
+                    Ok(e) => {
+                        println!("{}", e.rows_affected());
+                        Ok(QueryResult::Update(e.rows_affected()))
+                    }
                     Err(e) => Err(RepositoryError::Sqlx(e.to_string())),
                 }
             } else {

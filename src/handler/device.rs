@@ -178,7 +178,7 @@ pub async fn update(
                 .build()
         })?;
 
-        netw_new.used.add(num).map_err(|x| {
+        netw_new.used.add(num as u32).map_err(|x| {
             ResponseError::builder()
                 .detail(
                     "The number from the device used cannot be updated, but the device status can"
