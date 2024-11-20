@@ -28,7 +28,7 @@
                         <td data-name="free">{% if net.1 %}<span class="fw-bold">+</span>{% endif %} {{ net.0.free }}</td>
                         <td class="text-center"><a href="/devices/{{net.0.id}}">Devices</a></td>
                         {% if role == 'Admin' %}
-                            <td class="text-center"><button type="button" class="btn btn-primary" data-type-button="modify" data-row="{{loop.index}}" data-bs-toggle="modal" data-bs-target="#modifNetworkModal">Modify</button></td>
+                            <td class="text-center"><button type="button" class="btn btn-primary" data-type-button="modify" data-row="{{loop.index}}">Modify</button></td>
                             <td class="text-center"><button type="button" class="btn btn-danger" data-type-button="rm" data-row="{{loop.index}}">RM</button></td>
                         {% endif %}
                     </tr>
@@ -36,7 +36,7 @@
             </tbody>
         </table>
 
-        <div class="modal fade" id="modifNetworkModal" tabindex="-1" aria-labelledby="modalLabel" aria-hidden="true">
+        <div class="modal fade" data-bs-backdrop="true" data-bs-keyboard="true" id="modifNetworkModal" tabindex="-1"  aria-labelledby="modalLabel" aria-hidden="true">
             <div class="modal-dialog">
               <div class="modal-content">
                 <div class="modal-header">
@@ -99,8 +99,7 @@
     {% if role == "Admin" %}
         <button type="button" class="btn btn-primary mb-3" id="create_row">Add new network</button>
         <section id="container_table"></section>
-        <script src="/static/new_network.js" type="module"></script>
         <script src="/static/bootstrap.min.js"></script>
-        <script src="/static/network.js"></script>
+        <script src="/static/network.js" type="module"></script>
     {% endif %}
 {% endblock %}
