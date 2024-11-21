@@ -22,3 +22,26 @@
     from {opacity: 0; transform: translateX(-30%);}
     to {opacity: 1; transform: translateX(0);}
 }
+
+.grid-devices {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); /* 3 columnas de igual tamaño */
+    
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg) scale(1);
+      }
+    50% {
+        transform: rotate(180deg) scale(1.3);
+    }
+    100% {
+        transform: rotate(360deg) scale(1);
+    }
+}
+
+
+.grid-devices a:hover {
+    animation: spin 0.5s linear;
+}
