@@ -7,7 +7,7 @@ mod trace_layer;
 use axum::{
     middleware,
     response::{IntoResponse, Redirect},
-    routing::{delete, get, post, put},
+    routing::{delete, get, patch, post, put},
     serve, Router,
 };
 use database::SqliteRepository;
@@ -55,6 +55,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             get(device::get_all).put(device::create_all_devices),
         ) // create, update and get all devices
         .route("/delete", delete(device::delete))
+        .route("/ping", patch(device::ping))
         .route("/one", get(device::get_one).patch(device::update)); //get one device
 
     let user = Router::new().route("/", put(auth::create));

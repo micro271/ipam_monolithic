@@ -59,7 +59,8 @@ pub async fn http_view_network(
     cont.insert("block", "network");
     cont.insert("networks", &networks);
     cont.insert("role", &claim.role);
-    cont.insert("user_id", &claim.id);
+    cont.insert("user_id", &claim.sub);
+    cont.insert("username", &claim.username);
 
     let tera = TEMPLATES.lock().await;
 
@@ -90,7 +91,8 @@ pub async fn http_view_devices(
     con.insert("block", "device");
     con.insert("network", &network.first());
     con.insert("devices", &devices);
-    con.insert("user_id", &claim.id);
+    con.insert("user_id", &claim.sub);
+    con.insert("username", &claim.username);
     con.insert("role", &claim.role);
     con.insert("ipv4", &network.first().map(|x| x.network.addr().is_ipv4()));
     con.insert("overflow_prefix", &overflow);
@@ -105,8 +107,9 @@ pub async fn offices(
 ) -> impl IntoResponse {
     let mut cont = Context::new();
     cont.insert("block", "office");
-    cont.insert("user_id", &claim.id);
+    cont.insert("user_id", &claim.sub);
     cont.insert("role", &claim.role);
+    cont.insert("username", &claim.username);
 
     let state = state.lock().await;
     let ofs = state.get::<Office>(None).await.unwrap_or_default();

@@ -23,7 +23,7 @@ pub async fn create(
             .instance(uri.to_string())
             .detail(format!(
                 "The user {} doesn't belong to the {:?} role",
-                claim.id,
+                claim.sub,
                 Role::Admin
             ))
             .title("User not authorized".to_string())
@@ -91,8 +91,9 @@ pub async fn verify_token(
 ) -> Result<Response, Redirect> {
     match token.map(authentication::verify_token::<Claims, _>) {
         Ok(Ok(e)) => {
-            tracing::Span::current().record("user", tracing::field::display(e.id));
-            tracing::Span::current().record("role", tracing::field::debug(e.role.clone()));
+            tracing::Span::current().record("id", tracing::field::display(e.sub));
+            tracing::Span::current().record("role", tracing::field::debug(&e.role));
+            tracing::Span::current().record("username", tracing::field::display(&e.username));
             req.extensions_mut().insert(e);
             Ok(next.run(req).await)
         }

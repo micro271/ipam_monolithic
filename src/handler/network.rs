@@ -51,10 +51,6 @@ pub async fn update(
 
     let state = state.lock().await;
 
-    // Now: Delete all devices that belong to the network
-    // Soon: Update all devices
-    //     * Only if the prefix of the new network is bigger than or smaller than the current network
-
     if network.network.is_some() {
         return Err(ResponseError::builder()
             .title("Update not allowed".to_string())

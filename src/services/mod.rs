@@ -4,8 +4,9 @@ use serde::{Deserialize, Serialize};
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Claims {
     pub exp: usize,
-    pub id: uuid::Uuid,
+    pub sub: uuid::Uuid,
     pub role: Role,
+    pub username: String,
 }
 
 impl libipam::authentication::Claim for Claims {}
@@ -15,8 +16,9 @@ impl From<User> for Claims {
         Self {
             exp: (time::OffsetDateTime::now_utc() + time::Duration::hours(6)).unix_timestamp()
                 as usize,
-            id: value.id,
+            sub: value.id,
             role: value.role,
+            username: value.username,
         }
     }
 }

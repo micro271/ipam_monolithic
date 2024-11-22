@@ -11,13 +11,13 @@ impl From<RepositoryError> for ResponseError {
                 .detail(e.to_string())
                 .build(),
             RepositoryError::RowNotFound => ResponseError::builder()
-                .status(StatusCode::NOT_FOUND)
-                .title(StatusCode::NOT_FOUND.to_string())
+                .status(StatusCode::NO_CONTENT)
+                .title(StatusCode::NO_CONTENT.to_string())
                 .detail("The provided data did not match any records in the table".to_string())
                 .build(),
             RepositoryError::ColumnNotFound(e) => ResponseError::builder()
-                .status(StatusCode::NOT_FOUND)
-                .title(StatusCode::NOT_FOUND.to_string())
+                .status(StatusCode::BAD_REQUEST)
+                .title(StatusCode::BAD_REQUEST.to_string())
                 .detail(e.unwrap_or_default() /* TODO */)
                 .build(),
         }

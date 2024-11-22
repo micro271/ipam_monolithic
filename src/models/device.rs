@@ -1,7 +1,7 @@
 use super::*;
 use std::net::IpAddr;
 
-#[derive(Deserialize, Serialize, Debug)]
+#[derive(Deserialize, Serialize, Debug, Default)]
 pub struct UpdateDevice {
     pub ip: Option<IpAddr>,
     pub description: Option<String>,

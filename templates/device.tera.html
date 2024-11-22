@@ -6,12 +6,17 @@
             <li class="list-group-item"><span class="font-monospace">vlan:</span> {{network.vlan}}</li>
             <li class="list-group-item"><span class="font-monospace">description:</span> {{network.description}}</li>
             <li class="list-group-item"><span class="font-monospace">available:</span> {%if overflow_prefix %}<span class="fw-bold">+</span>{% endif %}{{network.available}}</li>
-            <li class="list-group-item"><span class="font-monospace">used:</span> {{network.used}}</li>
-            <li class="list-group-item"><span class="font-monospace">free:</span> {% if overflow_prefix %}<span class="fw-bold">+</span>{% endif %}{{network.free}}</li>
+            <li class="list-group-item"><span class="font-monospace">used:</span> <span id="network_used">{{network.used}}</span></li>
+            <li class="list-group-item"><span class="font-monospace">free:</span> {% if overflow_prefix %}<span class="fw-bold">+</span>{% endif %}<span id="network_free">{{network.free}}</span></li>
           </ul>
     </div>
     <section class="grid-devices">
         {% if devices | length > 0 %}
+            <div style="grid-column: 1/-1;">
+                <button class="btn btn-primary" type="button" id="walk" data-ipam-walk="false">
+                    Walk
+                </button>
+            </div>
             {% for device in devices %}
                 <article style="flex-grow: 1;" class="d-flex flex-column align-items-center justify-content-center p-2 box-border">
                     <div class="d-flex align-items-center justify-content-between">

@@ -1,7 +1,10 @@
 use super::*;
 use crate::models::{device::*, network::*};
 use axum::http::Uri;
-use libipam::response_error::{Builder, ResponseError};
+use libipam::{
+    ipam_services::{self, Ping},
+    response_error::{Builder, ResponseError},
+};
 
 use std::net::IpAddr;
 
@@ -250,4 +253,102 @@ pub async fn delete(
             ("network_id", network_id.into()),
         ])))
         .await?)
+}
+
+pub async fn ping(
+    State(state): State<RepositoryType>,
+    uri: Uri,
+    Extension(_claims): Extension<Claims>,
+    Query(query_params::ParamDevice { ip, network_id }): Query<query_params::ParamDevice>,
+) -> Result<Ping, ResponseError> {
+    let state = state.lock().await;
+
+    let device = state
+        .get::<Device>(Some(HashMap::from([
+            ("ip", ip.into()),
+            ("network_id", network_id.into()),
+        ])))
+        .await
+        .map_err(|x| Into::<Builder>::into(ResponseError::from(x)).instance(uri.to_string()))?
+        .remove(0);
+
+    if ipam_services::Ping::Pong == ipam_services::ping(ip, 2000).await {
+        if device.status != Status::Online {
+            let mut updater = UpdateDevice::default();
+            updater.status = Some(Status::Online);
+            state
+                .update::<Device, _>(
+                    updater,
+                    Some(HashMap::from([
+                        ("ip", ip.into()),
+                        ("network_id", network_id.into()),
+                    ])),
+                )
+                .await
+                .map_err(|x| {
+                    Into::<Builder>::into(ResponseError::from(x)).instance(uri.to_string())
+                })?;
+        }
+
+        if device.status == Status::Unknown {
+            let mut network = state
+                .get::<Network>(Some(HashMap::from([("id", network_id.into())])))
+                .await
+                .map_err(|x| {
+                    Into::<Builder>::into(ResponseError::from(x))
+                        .instance(uri.to_string())
+                        .title("We can't changed the network count".to_string())
+                })?
+                .remove(0);
+
+            if network.used.add(1_u8).is_err() || network.free.sub(1_u8).is_err() {
+                return Err(ResponseError::builder()
+                    .detail(format!(
+                        "We've been able to modified the free and used counter in network {}",
+                        network.network
+                    ))
+                    .title("Fail to modifie host counter".to_string())
+                    .status(StatusCode::NOT_MODIFIED)
+                    .build());
+            }
+
+            let updater = UpdateNetworkCount {
+                used: Some(network.used.clone()),
+                free: Some(network.free.clone()),
+                available: None,
+            };
+            if state
+                .update::<Network, _>(updater, Some(HashMap::from([("id", network_id.into())])))
+                .await
+                .is_err()
+            {
+                return Err(ResponseError::builder()
+                    .instance(uri.to_string())
+                    .status(StatusCode::NOT_MODIFIED)
+                    .detail("We have been able to modify the host counter in the network, but the device was updated seamlessly".to_string())
+                    .title("We can't changed the network count".to_string())
+                    .build());
+            }
+        }
+
+        Ok(Ping::Pong)
+    } else {
+        if device.status == Status::Online || device.status == Status::Reserved {
+            let mut updater = UpdateDevice::default();
+            updater.status = Some(Status::Offline);
+            state
+                .update::<Device, _>(
+                    updater,
+                    Some(HashMap::from([
+                        ("ip", ip.into()),
+                        ("network_id", network_id.into()),
+                    ])),
+                )
+                .await
+                .map_err(|x| {
+                    Into::<Builder>::into(ResponseError::from(x)).instance(uri.to_string())
+                })?;
+        }
+        Ok(Ping::Fail)
+    }
 }

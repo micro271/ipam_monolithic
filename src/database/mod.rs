@@ -275,9 +275,7 @@ impl Repository for SqliteRepository {
                 }
 
                 match sql.execute(&self.0).await {
-                    Ok(e) => {
-                        Ok(QueryResult::Update(e.rows_affected()))
-                    }
+                    Ok(e) => Ok(QueryResult::Update(e.rows_affected())),
                     Err(e) => Err(RepositoryError::Sqlx(e.to_string())),
                 }
             } else {
