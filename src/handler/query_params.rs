@@ -9,6 +9,6 @@ pub struct ParamDevice {
 
 #[derive(Deserialize)]
 pub struct ParamSubnetting {
-   pub father_id: uuid::Uuid,
-   pub prefix: u8, 
+    pub father_id: uuid::Uuid,
+    pub prefix: u8,
 }

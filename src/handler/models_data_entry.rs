@@ -16,7 +16,7 @@ pub struct Network {
     pub network: IpNet,
     pub description: Option<String>,
     pub vlan: Option<network::Vlan>,
-    pub father: Option<uuid::Uuid>
+    pub father: Option<uuid::Uuid>,
 }
 
 impl From<Network> for network::Network {

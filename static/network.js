@@ -155,8 +155,8 @@ const send_one = async (event) => {
     if (json) {
         const data = {
             body: JSON.stringify(json),
-            method: 'PUT',
-            endpoint: '/api/network/create',
+            method: 'POST',
+            endpoint: '/api/v1/network',
             headers: {'Content-type': 'application/json'}
         }
         const resp = await send_data(data);
@@ -243,8 +243,8 @@ const send_all_networks = async () => {
             for (const row of rows) {
                 const data = get_data_network_to_send(row);
                 if (data){
-                    const send = await fetch('/api/network/create',{
-                        method: 'PUT',
+                    const send = await fetch('/api/v1/network',{
+                        method: 'POST',
                         headers: {
                             'Content-Type': 'application/json'
                         },
@@ -282,7 +282,7 @@ const rm_network = async (event) => {
     const table = document.getElementById(ID_TABLE_CURRENT_NETWORKS);
     const row = table.rows[row_number];
     const network_id = row.cells[1].textContent;
-    const resp = await fetch(`/api/network/${network_id}`,{
+    const resp = await fetch(`/api/v1/network/${network_id}`,{
         method: 'DELETE'
     });
     if (resp.ok) {
@@ -364,7 +364,7 @@ const modal_event = (event) => {
         
         
         if (Object.keys(new_data).length > 0) {
-            const resp = await fetch(`/api/network/${id_value}`,{
+            const resp = await fetch(`/api/v1/network/${id_value}`,{
                 headers: {'Content-type':'application/json'},
                 method: 'PATCH',
                 body: JSON.stringify(new_data),

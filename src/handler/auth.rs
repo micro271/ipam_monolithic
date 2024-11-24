@@ -10,6 +10,7 @@ use libipam::{
     authentication::{self, create_token, encrypt, verify_passwd},
     response_error::ResponseError,
 };
+
 #[axum::debug_handler]
 pub async fn create(
     State(state): State<RepositoryType>,
@@ -73,9 +74,13 @@ pub async fn login(
                 );
                 Ok(req)
             }
-            Err(_) => Err(ResponseError::builder()
+            Err(e) => {
+                Err(ResponseError::builder()
+                .title("We've had an error to create the token".to_string())
+                .detail(e.to_string())
                 .status(StatusCode::INTERNAL_SERVER_ERROR)
-                .build()),
+                .build())}
+                
         }
     } else {
         Err(ResponseError::builder()

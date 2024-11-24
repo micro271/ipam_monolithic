@@ -7,7 +7,7 @@ use axum::{
 use std::{collections::HashMap, sync::LazyLock};
 use tera::{Context, Tera};
 use tokio::sync::Mutex;
-use tracing::instrument;
+use tracing::{info, instrument};
 use uuid::Uuid;
 
 use crate::{
@@ -46,15 +46,10 @@ pub async fn http_view_network(
     let state = state.lock().await;
 
     let networks = state
-        .get::<Network>(None)
+        .get::<Network>(Some(HashMap::from([("father",None::<uuid::Uuid>.into())])))
         .await
-        .unwrap()
-        .into_iter()
-        .map(|x| {
-            let overflow = (x.network.max_prefix_len() - x.network.prefix_len()) > 32;
-            (x, overflow)
-        })
-        .collect::<Vec<(Network, bool)>>();
+        .unwrap_or_default();
+
     let mut cont = Context::new();
     cont.insert("block", "network");
     cont.insert("networks", &networks);
@@ -63,7 +58,6 @@ pub async fn http_view_network(
     cont.insert("username", &claim.username);
 
     let tera = TEMPLATES.lock().await;
-
     Html(tera.render("index.html", &cont).unwrap()).into_response()
 }
 #[instrument]
@@ -78,10 +72,7 @@ pub async fn http_view_devices(
         .get::<Network>(Some(HashMap::from([("id", network_id.into())])))
         .await
         .unwrap();
-    let overflow = network
-        .first()
-        .map(|x| (x.network.max_prefix_len() - x.network.prefix_len()) > 32)
-        .unwrap();
+    
     let devices = state
         .get::<Device>(Some(HashMap::from([("network_id", network_id.into())])))
         .await
@@ -95,7 +86,6 @@ pub async fn http_view_devices(
     con.insert("username", &claim.username);
     con.insert("role", &claim.role);
     con.insert("ipv4", &network.first().map(|x| x.network.addr().is_ipv4()));
-    con.insert("overflow_prefix", &overflow);
 
     let tera = TEMPLATES.lock().await;
     Html(tera.render("index.html", &con).unwrap()).into_response()

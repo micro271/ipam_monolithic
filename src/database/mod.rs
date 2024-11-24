@@ -46,7 +46,7 @@ impl SqliteRepository {
         sqlx::query(query)
             .execute(&self.0)
             .await
-            .expect("Error aquiaaaaaaa");
+            .expect("Database error");
         Ok(())
     }
 
@@ -155,7 +155,7 @@ impl Repository for SqliteRepository {
                         if !cols.contains(i) {
                             return Err(RepositoryError::ColumnNotFound(Some(i.to_string())));
                         }
-
+                        
                         query.push_str(&format!(" {} = ${}", i, pos));
                         if pos < len {
                             query.push_str(" AND");

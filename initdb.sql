@@ -6,7 +6,7 @@ CREATE TABLE IF NOT EXISTS networks (
     free INTEGER NOT NULL,
     vlan INTEGER,
     description TEXT,
-    father TEXT,
+    father TEXT
 );
 
 CREATE TABLE IF NOT EXISTS offices (

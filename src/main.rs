@@ -7,7 +7,7 @@ mod trace_layer;
 use axum::{
     middleware,
     response::{IntoResponse, Redirect},
-    routing::{delete, get, patch, post, put},
+    routing::{get, patch, post},
     serve, Router,
 };
 use database::SqliteRepository;
@@ -39,8 +39,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let db = Arc::new(Mutex::new(SqliteRepository::new(&db_name).await?));
     let network = Router::new()
-        .route("/create", put(network::create))
-        .route("/all", get(network::get_all)) // crate, update and get (all) networks
+        .route("/", post(network::create).get(network::get_all))
+        .route(
+            "/subnet",
+            post(network::create_network_child).get(network::get_all_with_father),
+        )
         .route(
             "/:id",
             get(network::get_one)
@@ -49,16 +52,20 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         ); // get one network
 
     let device = Router::new()
-        .route("/create", post(device::create))
         .route(
-            "/all/:network_id",
-            get(device::get_all).put(device::create_all_devices),
+            "/",
+            post(device::create)
+                .delete(device::delete)
+                .patch(device::update)
+                .get(device::get_one),
+        )
+        .route(
+            "/:network_id",
+            get(device::get_all).post(device::create_all_devices),
         ) // create, update and get all devices
-        .route("/delete", delete(device::delete))
-        .route("/ping", patch(device::ping))
-        .route("/one", get(device::get_one).patch(device::update)); //get one device
+        .route("/ping", patch(device::ping));
 
-    let user = Router::new().route("/", put(auth::create));
+    let user = Router::new().route("/", post(auth::create));
 
     let api = Router::new()
         .nest("/network", network)
@@ -77,7 +84,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let app = Router::new()
         .nest("/", web)
-        .nest("/api", api)
+        .nest("/api/v1", api)
         .layer(middleware::from_fn(auth::verify_token))
         .route("/login", post(auth::login).get(http::login))
         .with_state(db.clone())

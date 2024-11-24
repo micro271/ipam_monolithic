@@ -63,7 +63,6 @@ impl Vlan {
     }
 }
 
-
 #[derive(Debug)]
 pub enum VlanError {
     InvalidVlan,

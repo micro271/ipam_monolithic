@@ -56,7 +56,7 @@ const reserve_ip = (event) => {
         const ip = button.getAttribute("data-ipam-ping").replaceAll("_",".");
         const network_id = document.getElementById("network_id").textContent;
         if (ip) {
-            const req = await fetch(`/api/device/ping?ip=${ip}&network_id=${network_id}`,{
+            const req = await fetch(`/api/v1/device/ping?ip=${ip}&network_id=${network_id}`,{
                 method: 'PATCH'
             });
             location.reload(true)
@@ -86,7 +86,7 @@ document.getElementById("walk").addEventListener("click", async (event) => {
                 btn.classList.add("link-success");
                 const ip_ = btn.getAttribute("data-ipam-ping");
                 const ip = ip_.replaceAll("_",".");
-                const ping = await fetch(`/api/device/ping?ip=${ip}&network_id=${network_id}`,{
+                const ping = await fetch(`/api/v1/device/ping?ip=${ip}&network_id=${network_id}`,{
                     method: 'PATCH'
                 });
                 const resp = await ping.json();

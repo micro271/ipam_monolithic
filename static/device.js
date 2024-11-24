@@ -8,10 +8,10 @@ if (button_create_all) {
         const endpoint = document.getElementById("network_id").innerHTML;
         console.log(endpoint)
         const data = {
-            endpoint: `/api/device/all/${endpoint}`,
+            endpoint: `/api/v1/device/${endpoint}`,
             headers: {'Content-type': 'application/json'},
             body: null,
-            method: 'PUT',
+            method: 'POST',
         }
         if ((await send_data(data)).ok) {
             location.reload(true)

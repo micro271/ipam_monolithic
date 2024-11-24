@@ -1,7 +1,11 @@
 use super::*;
 use crate::models::network::*;
 use axum::http::Uri;
-use libipam::{ipam_services::subnetting, response_error::{Builder, ResponseError}, type_net::host_count::HostCount};
+use libipam::{
+    ipam_services::subnetting,
+    response_error::{Builder, ResponseError},
+    type_net::host_count::HostCount,
+};
 use query_params::ParamSubnetting;
 pub async fn create(
     State(state): State<RepositoryType>,
@@ -76,7 +80,7 @@ pub async fn get_all(
     let state = state.lock().await;
 
     state
-        .get::<Network>(Some(HashMap::from([("father",None::<Uuid>.into())])))
+        .get::<Network>(Some(HashMap::from([("father", None::<Uuid>.into())])))
         .await
         .map(QueryResult::from)
         .map_err(|x| {
@@ -108,26 +112,38 @@ pub async fn delete(
         })
 }
 
-pub async fn create_network_child(State(state): State<RepositoryType>, uri: Uri, Query(ParamSubnetting {prefix, father_id}): Query<ParamSubnetting>) -> Result<QueryResult<Network>, ResponseError> {
+pub async fn create_network_child(
+    State(state): State<RepositoryType>,
+    uri: Uri,
+    Query(ParamSubnetting { prefix, father_id }): Query<ParamSubnetting>,
+) -> Result<QueryResult<Network>, ResponseError> {
     let state = state.lock().await;
-    let network = state.get::<Network>(Some(HashMap::from([("id",father_id.into())]))).await.map_err(|x| {
-        Into::<Builder>::into(ResponseError::from(x))
-            .instance(uri.to_string())
-            .build()
-
-    })?.remove(0);
+    let network = state
+        .get::<Network>(Some(HashMap::from([("id", father_id.into())])))
+        .await
+        .map_err(|x| {
+            Into::<Builder>::into(ResponseError::from(x))
+                .instance(uri.to_string())
+                .build()
+        })?
+        .remove(0);
     if (network.network.prefix_len() - prefix) <= 0 {
         return Err(ResponseError::builder()
             .title("Prefix invalid".to_string())
-            .detail(format!("The subnet {}/{} is bigger than {}, therefore we've created it", network.network.addr(), prefix, network.network))
+            .detail(format!(
+                "The subnet {}/{} is bigger than {}, therefore we've created it",
+                network.network.addr(),
+                prefix,
+                network.network
+            ))
             .status(StatusCode::BAD_REQUEST)
-            .build()
-        );
+            .build());
     }
-    match subnetting(subnetting.ip, subnetting.prefix).await {
-        Ok(e) =>  {
-            let new_networks = e.into_iter().map(|x| {
-                Network {
+    match subnetting(network.network, prefix).await {
+        Ok(e) => {
+            let new_networks = e
+                .into_iter()
+                .map(|x| Network {
                     id: uuid::Uuid::new_v4(),
                     father: Some(network.id),
                     vlan: None,
@@ -136,34 +152,32 @@ pub async fn create_network_child(State(state): State<RepositoryType>, uri: Uri,
                     available: HostCount::new((&x).into()),
                     used: 0.into(),
                     free: HostCount::new((&x).into()),
-                }
-            }).collect::<Vec<Network>>();
+                })
+                .collect::<Vec<Network>>();
 
             Ok(state.insert::<Network>(new_networks).await.map_err(|x| {
                 Into::<Builder>::into(ResponseError::from(x))
                     .instance(uri.to_string())
                     .build()
             })?)
-        },
-        Err(e) => {
-            Err(ResponseError::builder()
-                .title("We've had an error creating te subnet".to_string())
-                .detail(e.to_string())
-                .status(StatusCode::INTERNAL_SERVER_ERROR)
-                .build())
         }
+        Err(e) => Err(ResponseError::builder()
+            .title("We've had an error creating te subnet".to_string())
+            .detail(e.to_string())
+            .status(StatusCode::INTERNAL_SERVER_ERROR)
+            .build()),
     }
 }
 
 pub async fn get_all_with_father(
     State(state): State<RepositoryType>,
     uri: Uri,
-    Path(id): Path<Uuid>
+    Path(id): Path<Uuid>,
 ) -> Result<QueryResult<Network>, ResponseError> {
     let state = state.lock().await;
 
     state
-        .get::<Network>(Some(HashMap::from([("father",id.into())])))
+        .get::<Network>(Some(HashMap::from([("father", id.into())])))
         .await
         .map(QueryResult::from)
         .map_err(|x| {

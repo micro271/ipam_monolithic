@@ -65,6 +65,7 @@ impl Table for Network {
             "vlan",
             "free",
             "description",
+            "father",
         ]
     }
 
@@ -74,7 +75,7 @@ impl Table for Network {
 
     fn query_insert() -> String {
         format!(
-            "INSERT INTO {} (id, network, available, used, free, vlan, description) VALUES ($1, $2, $3, $4, $5, $6, $7)",
+            "INSERT INTO {} (id, network, available, used, free, vlan, description, father) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)",
             Self::name()
         )
     }
@@ -88,6 +89,7 @@ impl Table for Network {
             self.free.into(),
             self.vlan.into(),
             self.description.into(),
+            self.father.into(),
         ]
     }
 }
