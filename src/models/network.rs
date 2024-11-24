@@ -22,6 +22,7 @@ pub struct UpdateNetworkCount {
 #[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct Network {
     pub id: uuid::Uuid,
+    pub father: Option<uuid::Uuid>,
     pub vlan: Option<Vlan>,
     pub network: IpNet,
     pub description: Option<String>,
@@ -61,6 +62,7 @@ impl Vlan {
         Ok(())
     }
 }
+
 
 #[derive(Debug)]
 pub enum VlanError {

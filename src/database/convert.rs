@@ -33,6 +33,7 @@ impl From<SqliteRow> for Network {
             used: value.get::<'_, u32, _>("used").into(),
             vlan: Some(Vlan::new(value.get::<'_, i32, _>("vlan") as u16).unwrap()),
             free: value.get::<'_, u32, _>("free").into(),
+            father: value.get("father"),
         }
     }
 }

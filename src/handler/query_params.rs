@@ -1,9 +1,14 @@
 use super::Uuid;
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
 use std::net::IpAddr;
-
-#[derive(Deserialize, Serialize, Debug)]
+#[derive(Deserialize, Debug)]
 pub struct ParamDevice {
     pub ip: IpAddr,
     pub network_id: Uuid,
+}
+
+#[derive(Deserialize)]
+pub struct ParamSubnetting {
+   pub father_id: uuid::Uuid,
+   pub prefix: u8, 
 }

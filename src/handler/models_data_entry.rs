@@ -16,6 +16,7 @@ pub struct Network {
     pub network: IpNet,
     pub description: Option<String>,
     pub vlan: Option<network::Vlan>,
+    pub father: Option<uuid::Uuid>
 }
 
 impl From<Network> for network::Network {
@@ -35,6 +36,7 @@ impl From<Network> for network::Network {
             available: HostCount::new(Prefix::from(ip)),
             used: 0.into(),
             vlan: value.vlan,
+            father: value.father,
         }
     }
 }
