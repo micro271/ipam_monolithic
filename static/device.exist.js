@@ -30,8 +30,7 @@ const reserve_ip = (event) => {
 
     if (button_reserved){
         button_reserved.addEventListener('click', async (event) => {
-            const data = {
-                endpoint: `/api/device/one?ip=${ip}&network_id=${network_id}`,
+            const resp = await fetch(`/api/v1/device?ip=${ip}&network_id=${network_id}`,{
                 method: 'PATCH',
                 body: JSON.stringify({  
                     status: 'Reserved'
@@ -39,8 +38,7 @@ const reserve_ip = (event) => {
                 headers: {
                     'Content-type': 'application/json'
                 }
-            }
-            const resp = await send_data(data);
+            });
             console.log(await resp.json());
             if (resp.ok) {
                 location.reload(true);
@@ -80,7 +78,10 @@ document.getElementById("walk").addEventListener("click", async (event) => {
         const network_id = document.getElementById("network_id").textContent;
         if (spin) {
             for (const btn of [... spin]) {
-                
+                if (button.getAttribute("data-ipam-walk") === 'false') {
+                    break;
+                }
+
                 btn.style.animation = "spinWalk 0.6s infinite";
                 btn.classList.remove("link-danger");
                 btn.classList.add("link-success");
@@ -100,10 +101,7 @@ document.getElementById("walk").addEventListener("click", async (event) => {
                 btn.style.animation = "";
                 btn.classList.remove("link-success");
                 btn.classList.add("link-danger");
-
-                if (button.getAttribute("data-ipam-walk") === 'false') {
-                    location.reload(true);
-                }
+                
             }
             location.reload(true);
         }

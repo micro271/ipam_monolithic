@@ -88,13 +88,13 @@ impl Repository for SqliteRepository {
                 Err(e) => return Err(RepositoryError::Sqlx(e.to_string())),
             };
             let mut resp_data = Vec::new();
+            
             let mut count = 0;
             for data in data {
                 resp_data.push(data.clone());
                 let query = T::query_insert();
                 let mut tmp = sqlx::query(&query);
                 let data = T::get_fields(data);
-
                 for i in data {
                     tmp = match i {
                         TypeTable::String(s) => tmp.bind(s),
@@ -106,6 +106,7 @@ impl Repository for SqliteRepository {
                         TypeTable::Role(r) => tmp.bind(r),
                         TypeTable::OptionUuid(e) => tmp.bind(e),
                         TypeTable::BytesOption(e) => tmp.bind(e),
+                        TypeTable::Null => tmp,
                     };
                 }
 
@@ -155,15 +156,19 @@ impl Repository for SqliteRepository {
                         if !cols.contains(i) {
                             return Err(RepositoryError::ColumnNotFound(Some(i.to_string())));
                         }
-                        
-                        query.push_str(&format!(" {} = ${}", i, pos));
-                        if pos < len {
-                            query.push_str(" AND");
+                        if col.get(i).unwrap() == &TypeTable::Null {
+                            query.push_str(&format!(" {} IS NULL", i));
+                        } else {
+                            query.push_str(&format!(" {} = ${}", i, pos));
+                            if pos < len {
+                                query.push_str(" AND");
+                            }
+                            data_pos.insert(pos, col.get(i).unwrap());
+                            pos += 1;
                         }
-                        data_pos.insert(pos, col.get(i).unwrap());
-                        pos += 1;
                     }
-
+                    tracing::debug!("{}", query);
+                    tracing::debug!("{:?}",data_pos);
                     let mut resp = sqlx::query(&query);
 
                     for i in 1..pos {
@@ -177,6 +182,7 @@ impl Repository for SqliteRepository {
                             TypeTable::HostCount(num) => resp.bind(num),
                             TypeTable::Role(role) => resp.bind(role),
                             TypeTable::BytesOption(e) => resp.bind(e),
+                            TypeTable::Null => resp,
                         };
                     }
 
@@ -184,7 +190,7 @@ impl Repository for SqliteRepository {
                     while let Some(Ok(device)) = resp.next().await {
                         vec_resp.push(T::from(device));
                     }
-
+                    tracing::debug!("{:?}", vec_resp);
                     if !vec_resp.is_empty() {
                         Ok(vec_resp)
                     } else {
@@ -271,6 +277,7 @@ impl Repository for SqliteRepository {
                         TypeTable::OptionVlan(e) => sql.bind(e),
                         TypeTable::BytesOption(e) => sql.bind(e),
                         TypeTable::HostCount(e) => sql.bind(e),
+                        TypeTable::Null => sql,
                     };
                 }
 
@@ -331,6 +338,7 @@ impl Repository for SqliteRepository {
                             TypeTable::Role(role) => ex.bind(role),
                             TypeTable::OptionVlan(e) => ex.bind(e),
                             TypeTable::HostCount(i) => ex.bind(i),
+                            TypeTable::Null => ex,
                         };
                     }
 

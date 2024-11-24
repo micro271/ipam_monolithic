@@ -1,4 +1,4 @@
-use super::office::Office;
+use super::{office::Office, utils::TypeTable};
 use axum::{
     extract::{Path, Request, State},
     response::{Html, IntoResponse},
@@ -46,7 +46,7 @@ pub async fn http_view_network(
     let state = state.lock().await;
 
     let networks = state
-        .get::<Network>(Some(HashMap::from([("father",None::<uuid::Uuid>.into())])))
+        .get::<Network>(Some(HashMap::from([("father",TypeTable::Null)])))
         .await
         .unwrap_or_default();
 
@@ -72,7 +72,7 @@ pub async fn http_view_devices(
         .get::<Network>(Some(HashMap::from([("id", network_id.into())])))
         .await
         .unwrap();
-    
+
     let devices = state
         .get::<Device>(Some(HashMap::from([("network_id", network_id.into())])))
         .await

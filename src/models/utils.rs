@@ -233,7 +233,7 @@ impl<'a> Updatable<'a> for network::UpdateNetworkCount {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub enum TypeTable {
     String(String),
     OptionUuid(Option<Uuid>),
@@ -244,6 +244,7 @@ pub enum TypeTable {
     Role(user::Role),
     OptionVlan(Option<i32>),
     BytesOption(Option<Vec<u8>>),
+    Null,
 }
 
 impl From<Option<Credential>> for TypeTable {

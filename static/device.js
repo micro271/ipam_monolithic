@@ -7,13 +7,12 @@ if (button_create_all) {
     button_create_all.addEventListener('click', async () => {
         const endpoint = document.getElementById("network_id").innerHTML;
         console.log(endpoint)
-        const data = {
-            endpoint: `/api/v1/device/${endpoint}`,
-            headers: {'Content-type': 'application/json'},
-            body: null,
+        const resp = await fetch(`/api/v1/device/${endpoint}`,{
+            headers: {"Content-type": "application/json"},
             method: 'POST',
-        }
-        if ((await send_data(data)).ok) {
+        });
+        
+        if (resp.ok) {
             location.reload(true)
         }
     });
