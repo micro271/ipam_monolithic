@@ -102,6 +102,15 @@ pub async fn delete(
     }
 
     let state = state.lock().await;
+    let mut to_delete = Vec::new();
+    to_delete.push(id);
+    let mut pos = 0;
+    while let Ok(children) = state.get::<Network>(Some(HashMap::from([("father",to_delete[pos].into())]))).await {
+        for i in children {
+            to_delete.push(i.id);
+        }
+        pos += 1;
+    }
 
     state
         .delete::<Network>(Some(HashMap::from([("id", id.into())])))
@@ -127,19 +136,8 @@ pub async fn create_network_child(
                 .build()
         })?
         .remove(0);
-    if (network.network.prefix_len() - prefix) <= 0 {
-        return Err(ResponseError::builder()
-            .title("Prefix invalid".to_string())
-            .detail(format!(
-                "The subnet {}/{} is bigger than {}, therefore we've created it",
-                network.network.addr(),
-                prefix,
-                network.network
-            ))
-            .status(StatusCode::BAD_REQUEST)
-            .build());
-    }
-    match subnetting(network.network, prefix).await {
+
+    match subnetting(network.network, prefix) {
         Ok(e) => {
             let new_networks = e
                 .into_iter()
@@ -154,7 +152,6 @@ pub async fn create_network_child(
                     free: HostCount::new((&x).into()),
                 })
                 .collect::<Vec<Network>>();
-
             Ok(state.insert::<Network>(new_networks).await.map_err(|x| {
                 Into::<Builder>::into(ResponseError::from(x))
                     .instance(uri.to_string())

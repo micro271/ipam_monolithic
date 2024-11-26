@@ -6,7 +6,8 @@ CREATE TABLE IF NOT EXISTS networks (
     free INTEGER NOT NULL,
     vlan INTEGER,
     description TEXT,
-    father TEXT
+    father TEXT,
+    FOREIGN KEY (father) REFERENCES networks(id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS offices (

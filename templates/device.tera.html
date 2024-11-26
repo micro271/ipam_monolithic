@@ -1,33 +1,78 @@
 <div>
     <div class="text-left">
         <ul class="list-group list-group-flush">
-            <li class="list-group-item"><span class="font-monospace">id:</span> <span id="network_id">{{network.id}}</span></li>
-            <li class="list-group-item"><span class="font-monospace">network:</span> <span class="fw-bold">{{network.network}}</span></li>
+            <li class="list-group-item"><span class="font-monospace">id:</span> <span
+                    id="network_id">{{network.id}}</span></li>
+            <li class="list-group-item"><span class="font-monospace">network:</span> <span class="fw-bold"
+                    id="network">{{network.network}}</span></li>
             <li class="list-group-item"><span class="font-monospace">vlan:</span> {{network.vlan}}</li>
             <li class="list-group-item"><span class="font-monospace">description:</span> {{network.description}}</li>
-            <li class="list-group-item"><span class="font-monospace">available:</span> {%if overflow_prefix %}<span class="fw-bold">+</span>{% endif %}{{network.available}}</li>
-            <li class="list-group-item"><span class="font-monospace">used:</span> <span id="network_used">{{network.used}}</span></li>
-            <li class="list-group-item"><span class="font-monospace">free:</span> {% if overflow_prefix %}<span class="fw-bold">+</span>{% endif %}<span id="network_free">{{network.free}}</span></li>
-          </ul>
+            <li class="list-group-item"><span class="font-monospace">available:</span> {%if overflow_prefix %}<span
+                    class="fw-bold">+</span>{% endif %}{{network.available}}</li>
+            <li class="list-group-item"><span class="font-monospace">used:</span> <span
+                    id="network_used">{{network.used}}</span></li>
+            <li class="list-group-item"><span class="font-monospace">father:</span> <span
+                        id="network_used">{{network.father}}</span></li>
+            <li class="list-group-item"><span class="font-monospace">free:</span> <span id="network_free">{{network.free}}</span></li>
+        </ul>
     </div>
     <section class="grid-devices">
-        {% if devices | length > 0 %}
-            <div style="grid-column: 1/-1;">
-                <button class="btn btn-primary" type="button" id="walk" data-ipam-walk="false">
-                    Walk
-                </button>
+        {% if subnet | length > 0 %}
+        <table class="table table-hover text-center align-middle" id="table_main" style="grid-column: 1/-1;">
+            <thead>
+                <tr>
+                    <th scope="col" class="d-none d-lg-table-cell">#</th>
+                    <th scope="col" class="d-none d-lg-table-cell">id</th>
+                    <th scope="col">network</th>
+                    <th scope="col">vlan</th>
+                    <th scope="col">description</th>
+                    <th scope="col d-none d-lg-table-cell">available</th>
+                    <th scope="col">used</th>
+                    <th scope="col">free</th>
+                    <th colspan="1"></th>
+                </tr>
+            </thead>
+            <tbody class="table-group-divider">
+                {% for net in subnet %}
+                <tr>
+                    <th scope="row" class="d-none d-lg-table-cell">{{loop.index}}</th>
+                    <td data-name="id" class="d-none d-lg-table-cell">{{ net.id }}</td>
+                    <td data-name="network"><a href="/{{net.id}}" class="link-dark link-offset-2 link-underline-opacity-25 link-underline-opacity-100-hover">{{ net.network }}</a></td>
+                    <td data-name="vlan">{% if net.vlan %}{{net.vlan}}{% endif %}</td>
+                    <td data-name="description">{{ net.description }}</td>
+                    <td data-name="available" class="d-none d-lg-table-cell">{{ net.available }}</td>
+                    <td data-name="used">{{ net.used }}</td>
+                    <td data-name="free">{{ net.free }}</td>
+                    {% if role == 'Admin' %}
+                    <td class="text-center"><button type="button" class="btn btn-primary" data-type-button="modify"
+                            data-row="{{loop.index}}">Modify</button></td>
+                    {% endif %}
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% elif devices | length > 0 %}
+        <div style="grid-column: 1/-1;">
+            <button class="btn btn-primary" type="button" id="walk" data-ipam-walk="false">
+                Walk
+            </button>
+        </div>
+        {% for device in devices %}
+        <article style="flex-grow: 1;"
+            class="d-flex flex-column align-items-center justify-content-center p-2 box-border">
+            <div class="d-flex align-items-center justify-content-between">
+                <a type="button" class="icon-link me-1 link-hover link-danger"
+                    data-ipam-ping="{{device.ip | replace(from='.', to='_')}}">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="bi">
+                        <path fill-rule="evenodd"
+                            d="M4.755 10.059a7.5 7.5 0 0 1 12.548-3.364l1.903 1.903h-3.183a.75.75 0 1 0 0 1.5h4.992a.75.75 0 0 0 .75-.75V4.356a.75.75 0 0 0-1.5 0v3.18l-1.9-1.9A9 9 0 0 0 3.306 9.67a.75.75 0 1 0 1.45.388Zm15.408 3.352a.75.75 0 0 0-.919.53 7.5 7.5 0 0 1-12.548 3.364l-1.902-1.903h3.183a.75.75 0 0 0 0-1.5H2.984a.75.75 0 0 0-.75.75v4.992a.75.75 0 0 0 1.5 0v-3.18l1.9 1.9a9 9 0 0 0 15.059-4.035.75.75 0 0 0-.53-.918Z"
+                            clip-rule="evenodd" />
+                    </svg>
+                </a>
+                <p class="text-weight-bold m-0">{{ device.ip }}</p>
             </div>
-            {% for device in devices %}
-                <article style="flex-grow: 1;" class="d-flex flex-column align-items-center justify-content-center p-2 box-border">
-                    <div class="d-flex align-items-center justify-content-between">
-                        <a type="button" class="icon-link me-1 link-hover link-danger" data-ipam-ping="{{device.ip | replace(from='.', to='_')}}">
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="bi">
-                                <path fill-rule="evenodd" d="M4.755 10.059a7.5 7.5 0 0 1 12.548-3.364l1.903 1.903h-3.183a.75.75 0 1 0 0 1.5h4.992a.75.75 0 0 0 .75-.75V4.356a.75.75 0 0 0-1.5 0v3.18l-1.9-1.9A9 9 0 0 0 3.306 9.67a.75.75 0 1 0 1.45.388Zm15.408 3.352a.75.75 0 0 0-.919.53 7.5 7.5 0 0 1-12.548 3.364l-1.902-1.903h3.183a.75.75 0 0 0 0-1.5H2.984a.75.75 0 0 0-.75.75v4.992a.75.75 0 0 0 1.5 0v-3.18l1.9 1.9a9 9 0 0 0 15.059-4.035.75.75 0 0 0-.53-.918Z" clip-rule="evenodd" />
-                              </svg>                              
-                        </a>
-                        <p class="text-weight-bold m-0">{{ device.ip }}</p>
-                    </div>
-                    <div data-bs-toggle="popover" data-bs-title="<p class='fw-bold text-center'>{{device.ip}}</p>" data-bs-content="
+            <div data-bs-toggle="popover" data-bs-title="<p class='fw-bold text-center'>{{device.ip}}</p>"
+                data-bs-content="
                         <div class='lh-sm'>
                             <p><span class='font-monospace'>Status:</span> <span id='data_status' class='fw-bold {% if device.status == 'Online' %}text-online{% elif device.status == 'Offline' %}text-danger{% endif %}'>{{device.status}}</span></p>
                             <p><span class='font-monospace'>Description:</span> <span class='fw-bold'>{{device.description | default(value='empry')}}</span></p>
@@ -43,22 +88,101 @@
                         </div>
                         " role="button">
 
-                        <svg xmlns="http://www.w3.org/2000/svg" id="svg_{{device.ip | replace(from='.', to='_')}}" width="75" height="75" viewBox="0 0 24 24" style="fill: rgba(0, 0, 0, 1);transform: ;msFilter:;" class="{% if device.status == 'Reserved' %}svg-reserve{% elif device.status == 'Online' %}svg-online{% elif device.status == 'Offline' %}svg-offline{% else %}svg-unknown{% endif %}"><path d="M20 3H4a2 2 0 0 0-2 2v4a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2zM4 9V5h16v4zm16 4H4a2 2 0 0 0-2 2v4a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-4a2 2 0 0 0-2-2zM4 19v-4h16v4z"></path><path d="M17 6h2v2h-2zm-3 0h2v2h-2zm3 10h2v2h-2zm-3 0h2v2h-2z"></path></svg>
-                    </div>
-                </article>
-                {% endfor %}
-            <script src="/static/bootstrap.min.js"></script>
-            <script src="/static/device.exist.js" type="module"></script>
+                <svg xmlns="http://www.w3.org/2000/svg" id="svg_{{device.ip | replace(from='.', to='_')}}" width="75"
+                    height="75" viewBox="0 0 24 24" style="fill: rgba(0, 0, 0, 1);transform: ;msFilter:;"
+                    class="{% if device.status == 'Reserved' %}svg-reserve{% elif device.status == 'Online' %}svg-online{% elif device.status == 'Offline' %}svg-offline{% else %}svg-unknown{% endif %}">
+                    <path
+                        d="M20 3H4a2 2 0 0 0-2 2v4a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2zM4 9V5h16v4zm16 4H4a2 2 0 0 0-2 2v4a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-4a2 2 0 0 0-2-2zM4 19v-4h16v4z">
+                    </path>
+                    <path d="M17 6h2v2h-2zm-3 0h2v2h-2zm3 10h2v2h-2zm-3 0h2v2h-2z"></path>
+                </svg>
+            </div>
+        </article>
+        {% endfor %}
+
+        <script src="/static/device.exist.js" type="module"></script>
         {% else %}
-                <div>
-                    <button type="button" class="btn btn-primary" id="new_device_new">New</button>
-                    {% if ipv4 %}
-                        <button type="button" class="btn btn-warning" id="new_device_create_all_empty">Create all</button>
-                    {% endif %}
-                </div>
-                <script src="/static/device.js" type="module"></script>
+        <div style="grid-column: 1/-1;">
+            <button type="button" class="btn btn-primary" id="new_device_new">New device</button>
+            {% if ipv4 %}
+            <button type="button" class="btn btn-warning" id="new_device_create_all_empty">Create all devices</button>
+            {% endif %}
+            <button type="button" class="btn btn-primary" id="subnet">Subnet</button>
+
+        </div>
         {% endif %}
     </section>
 
-</div>  
+    <div class="modal fade" data-bs-backdrop="true" data-bs-keyboard="true" id="subnetting" tabindex="-1"
+            aria-labelledby="modalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h1 class="modal-title fs-5" id="modalLabel">Create a subnet</h1>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
 
+                        {% if subnet | length > 0 %}
+                        <div class="input-group mb-3">
+                            <span class="input-group-text" id="network_id_modal">id</span>
+                            <input name="id" type="text" class="form-control" aria-describedby="network_id_modal" disabled>
+                        </div>
+                        {% endif %}
+
+                        <div class="input-group mb-3">
+                            <span class="input-group-text">Network</span>
+                            <input type="text" class="form-control" name="network" disabled>
+                            {% if subnet | length > 0 %}
+                            <div class="form-check form-switch ms-2">
+                                <input class="form-check-input" type="checkbox" role="switch" id="checkbox_network_to_change">
+                                <label class="form-check-label" for="checkbox_network_to_change">Edit</label>
+                              </div>
+                            {% else %}
+                            <span class="input-group-text">/</span>
+                            <input type="text" class="form-control" name="prefix">
+                            {% endif %}
+                        </div>
+
+                        <div class="input-group mb-3">
+                            <span class="input-group-text" id="vlan_network_modal">vlan</span>
+                            <input name="vlan" type="text" class="form-control" aria-describedby="vlan_network_modal">
+                        </div>
+
+                        <div class="input-group mb-3">
+                            <span class="input-group-text" id="description_network_modal">description</span>
+                            <input name="description" type="text" class="form-control"
+                                aria-describedby="description_network_modal">
+                        </div>
+
+                        <div class="input-group mb-3">
+                            <span class="input-group-text" id="network_available_address_modal">available</span>
+                            <input name="available" type="text" class="form-control"
+                                aria-describedby="network_available_address_modal" disabled>
+                        </div>
+
+                        <div class="input-group mb-3">
+                            <span class="input-group-text" id="network_used_address_modal">used</span>
+                            <input name="used" type="text" class="form-control"
+                                aria-describedby="network_used_address_modal" disabled>
+                        </div>
+
+                        <div class="input-group mb-3">
+                            <span class="input-group-text" id="network_free_address_modal">free</span>
+                            <input name="free" type="text" class="form-control"
+                                aria-describedby="network_free_address_modal" disabled>
+                        </div>
+
+
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="button" class="btn btn-primary save">Save</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+</div>
+
+<script src="/static/bootstrap.min.js"></script>
+<script src="/static/device.js" type="module"></script>

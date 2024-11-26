@@ -7,7 +7,7 @@ use axum::{
 use std::{collections::HashMap, sync::LazyLock};
 use tera::{Context, Tera};
 use tokio::sync::Mutex;
-use tracing::{info, instrument};
+use tracing::instrument;
 use uuid::Uuid;
 
 use crate::{
@@ -72,7 +72,7 @@ pub async fn http_view_devices(
         .get::<Network>(Some(HashMap::from([("id", network_id.into())])))
         .await
         .unwrap();
-
+    let network_chiled = state.get::<Network>(Some(HashMap::from([("father", network_id.into())]))).await.unwrap_or_default();
     let devices = state
         .get::<Device>(Some(HashMap::from([("network_id", network_id.into())])))
         .await
@@ -82,6 +82,7 @@ pub async fn http_view_devices(
     con.insert("block", "device");
     con.insert("network", &network.first());
     con.insert("devices", &devices);
+    con.insert("subnet", &network_chiled);
     con.insert("user_id", &claim.sub);
     con.insert("username", &claim.username);
     con.insert("role", &claim.role);

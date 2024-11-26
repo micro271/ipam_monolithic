@@ -337,7 +337,7 @@ const modal_event = (event) => {
         
         if (tmp.checked && network_input) {
             network_input.disabled = false;
-        } else if (!tmp.checked) {
+        } else {
             network_input.disabled = true;
         }
     }); 
