@@ -12,7 +12,9 @@
                     <th scope="col d-none d-lg-table-cell">available</th>
                     <th scope="col">used</th>
                     <th scope="col">free</th>
-                    <th colspan="{% if role == 'Admin' %}2{%else%}1{% endif %}"></th>
+                    {% if role == 'Admin' %}
+                    <th colspan="3"></th>
+                    {% endif %}
                 </tr>
             </thead>
             <tbody class="table-group-divider">
@@ -23,12 +25,14 @@
                       <td data-name="network"><a href="/{{net.id}}" class="link-dark link-offset-2 link-underline-opacity-25 link-underline-opacity-100-hover">{{ net.network }}</a></td>
                       <td data-name="vlan">{% if net.vlan %}{{net.vlan}}{% endif %}</td>
                       <td data-name="description">{{ net.description }}</td>
-                      <td data-name="available" class="d-none d-lg-table-cell">{% if net.1 %}<span class="fw-bold">+</span>{% endif %} {{ net.available }}</td>
+                      <td data-name="available" class="d-none d-lg-table-cell">{{ net.available }}</td>
                       <td data-name="used">{{ net.used }}</td>
-                      <td data-name="free">{% if net.1 %}<span class="fw-bold">+</span>{% endif %} {{ net.free }}</td>
+                      <td data-name="free">{{ net.free }}</td>
                       {% if role == 'Admin' %}
-                        <td class="text-center"><button type="button" class="btn btn-primary" data-type-button="modify" data-row="{{loop.index}}">Modify</button></td>
-                            <td class="text-center"><button type="button" class="btn btn-danger" data-type-button="rm" data-row="{{loop.index}}">RM</button></td>
+                        <td><button type="button" class="btn btn-primary" data-type-button="modify" data-row="{{loop.index}}">Modify</button></td>
+                        <td><button type="button" class="btn btn-warning" data-type-button="clean"
+                              data-row="{{loop.index}}">Clean</button></td>
+                        <td><button type="button" class="btn btn-danger" data-type-button="rm" data-row="{{loop.index}}">RM</button></td>
                         {% endif %}
                     </tr>
                 {% endfor %}

@@ -7,7 +7,7 @@ mod trace_layer;
 use axum::{
     middleware,
     response::{IntoResponse, Redirect},
-    routing::{get, patch, post},
+    routing::{delete, get, patch, post},
     serve, Router,
 };
 use database::SqliteRepository;
@@ -39,17 +39,19 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let db = Arc::new(Mutex::new(SqliteRepository::new(&db_name).await?));
     let network = Router::new()
+        .route("/clean/:id", delete(network::clean))
         .route("/", post(network::create).get(network::get_all))
         .route(
             "/subnet",
             post(network::create_network_child).get(network::get_all_with_father),
         )
+        
         .route(
             "/:id",
             get(network::get_one)
                 .patch(network::update)
                 .delete(network::delete),
-        ); // get one network
+        );
 
     let device = Router::new()
         .route(

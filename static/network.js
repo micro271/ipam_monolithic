@@ -408,6 +408,17 @@ if (table_main_pointer) {
         btn.addEventListener('click', modal_event);
     })
 }
+const event_clean = async (btn) => {
+    const button = btn.currentTarget;
+    const row = button.getAttribute("data-row");
+    const table = document.getElementById(ID_TABLE_CURRENT_NETWORKS);
+    const id_to_clean = table.rows[row].querySelector("[data-name='id']").textContent;
+    const url = `/api/v1/network/clean/${id_to_clean}`
+    const resp = await fetch(url, {
+        method: 'DELETE'
+    });
+}
+
 const add_row_table_main = (rows) => {
     const table = document.getElementById(ID_TABLE_CURRENT_NETWORKS);
     if (rows && table) {
@@ -432,7 +443,13 @@ const add_row_table_main = (rows) => {
 
             const td_network = new_row.insertCell();
             td_network.setAttribute("data-name","network");
-            td_network.innerHTML = network;
+
+            const anchor_network = document.createElement('a');
+            anchor_network.href = id;
+            anchor_network.classList = "link-dark link-offset-2 link-underline-opacity-25 link-underline-opacity-100-hover"
+            anchor_network.textContent = network;
+
+            td_network.appendChild(anchor_network);
 
             const td_vlan = new_row.insertCell();
             td_vlan.setAttribute("data-name","vlan");
@@ -457,12 +474,6 @@ const add_row_table_main = (rows) => {
             td_free.setAttribute("data-name","free");
             td_free.textContent= free;
 
-            const td_button_device = new_row.insertCell();
-            const anchor_device = document.createElement('a');
-            anchor_device.href = `/devices/${id}`;
-            anchor_device.textContent = 'Devices';
-            td_button_device.appendChild(anchor_device);
-
             
             const td_button_modify = new_row.insertCell();
             const button_modify = document.createElement('button');
@@ -475,6 +486,17 @@ const add_row_table_main = (rows) => {
             button_modify.setAttribute('data-bs-toggle', "modal");
             button_modify.setAttribute('data-bs-target', "#modifNetworkModal");
             td_button_modify.appendChild(button_modify);
+
+
+            const td_button_clean = new_row.insertCell();
+            const button_clean = document.createElement('button');
+            button_clean.textContent = "Clean";
+            button_clean.addEventListener('click',event_clean);
+            button_clean.type = 'button';
+            button_clean.classList = 'btn btn-warning';
+            button_clean.setAttribute('data-type-button','clean');
+            button_clean.setAttribute('data-row', len);
+            td_button_clean.appendChild(button_clean);
 
 
             const td_button_rm = new_row.insertCell();
@@ -566,4 +588,8 @@ const create_table_main_if_not_exists = () => {
         container.appendChild(table);
     }
 }
+
+[... table_main_pointer.querySelectorAll("[data-type-button='clean']")].forEach(btn => {
+    btn.addEventListener("click", event_clean);
+});
 

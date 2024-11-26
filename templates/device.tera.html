@@ -29,7 +29,9 @@
                     <th scope="col d-none d-lg-table-cell">available</th>
                     <th scope="col">used</th>
                     <th scope="col">free</th>
-                    <th colspan="1"></th>
+                    {% if role == 'Admin' %}
+                    <th colspan="2"></th>
+                    {% endif %}
                 </tr>
             </thead>
             <tbody class="table-group-divider">
@@ -46,6 +48,8 @@
                     {% if role == 'Admin' %}
                     <td class="text-center"><button type="button" class="btn btn-primary" data-type-button="modify"
                             data-row="{{loop.index}}">Modify</button></td>
+                    <td class="text-center"><button type="button" class="btn btn-warning" data-type-button="clean"
+                                data-row="{{loop.index}}">Clean</button></td>
                     {% endif %}
                 </tr>
                 {% endfor %}

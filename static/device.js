@@ -46,7 +46,7 @@ const table_main_network_chiled = document.getElementById("table_main");
 
 if (table_main_network_chiled) {
     const button_modify = table_main_network_chiled.querySelectorAll("[data-type-button='modify']");
-    [... button_modify].map(btn => {
+    [... button_modify].forEach(btn => {
 
         btn.addEventListener("click", event => {
             const table = document.getElementById("table_main");
@@ -135,4 +135,19 @@ if (table_main_network_chiled) {
             modal.addEventListener('hidden.bs.modal',() => modal.querySelector(`.save`).removeEventListener('click',modal_save_event));
         })
     });
+
+    [... table_main_network_chiled.querySelectorAll("[data-type-button='clean']")].forEach(btn => {
+        btn.addEventListener("click", async btn => {
+            const button = btn.currentTarget;
+            const row = button.getAttribute("data-row");
+            const id_to_clean = table_main_network_chiled.rows[row].querySelector("[data-name='id']").textContent;
+            const url = `/api/v1/network/clean/${encodeURIComponent(id_to_clean)}`
+            console.log(url)
+            const resp = await fetch(url, {
+                method: 'DELETE'
+            });
+            console.log(resp);
+        });
+    });
 }
+
