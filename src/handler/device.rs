@@ -74,146 +74,13 @@ pub async fn update(
     Query(query_params::ParamDevice { ip, network_id }): Query<query_params::ParamDevice>,
     Json(mut device): Json<UpdateDevice>,
 ) -> Result<impl IntoResponse, ResponseError> {
-    if claim.role != Role::Admin {
-        return Err(ResponseError::builder()
-            .status(StatusCode::UNAUTHORIZED)
-            .build());
-    }
-    let state = state.lock().await;
-
-    let current_data = state
-        .get::<Device>(Some(HashMap::from([
-            ("ip", ip.into()),
-            ("network_id", network_id.into()),
-        ])))
-        .await?
-        .remove(0);
-
-    let mut netw_new = state
-        .get::<Network>(Some(HashMap::from([(
-            "id",
-            match device.network_id {
-                Some(e) => e.into(),
-                None => network_id.into(),
-            },
-        )])))
-        .await?
-        .remove(0);
-
-    let to_reduce = if let Some(true) = device
-        .status
-        .clone()
-        .map(|_| current_data.status != Status::Unknown)
-    {
-        return Err(ResponseError::builder()
-            .instance(uri.to_string())
-            .status(StatusCode::BAD_REQUEST)
-            .detail("You can change the status of devices with an unknown status".to_string())
-            .build());
-    } else {
-        Some(1)
-    };
-
-    let device_to_delete = match (device.ip, device.network_id) {
-        (Some(ip), Some(network_id))
-            if ip == current_data.ip || network_id == current_data.network_id =>
-        {
-            Some((ip, network_id))
-        }
-        (Some(ip), None) if ip != current_data.ip => Some((ip, current_data.network_id)),
-        (None, Some(network_id)) if network_id != current_data.network_id => {
-            Some((current_data.ip, network_id))
-        }
-        _ => {
-            device.ip = None;
-            device.network_id = None;
-            None
-        }
-    };
-
-    if let Some((ip, network_id)) = device_to_delete {
-        if let Ok(true) = state
-            .get::<Device>(Some(HashMap::from([
-                ("ip", ip.into()),
-                ("network_id", network_id.into()),
-            ])))
-            .await
-            .map(|mut x| x.remove(0))
-            .map(|x| x.status != Status::Unknown)
-        {
-            return Err(ResponseError::builder()
-                .status(StatusCode::BAD_REQUEST)
-                .title(StatusCode::BAD_REQUEST.to_string())
-                .instance(uri.to_string())
-                .build());
-        }
-
-        let _ = state
-            .delete::<Device>(Some(HashMap::from([
-                ("ip", ip.into()),
-                ("network_id", network_id.into()),
-            ])))
-            .await;
-    }
-
-    let resp = state
-        .update::<Device, _>(
-            device,
-            Some(HashMap::from([
-                ("ip", ip.into()),
-                ("network_id", network_id.into()),
-            ])),
-        )
-        .await?;
-    if let Some(num) = to_reduce {
-        netw_new.free.sub(num as u32).map_err(|e| {
-            ResponseError::builder()
-                .detail(
-                    "The number from the free ip cannot be updated, but the device status can"
-                        .to_string(),
-                )
-                .status(StatusCode::OK)
-                .title(format!(
-                    "Error to update free devices in the network {} - {:?}",
-                    netw_new.network, e
-                ))
-                .instance(uri.to_string())
-                .build()
-        })?;
-
-        netw_new.used.add(num as u32).map_err(|x| {
-            ResponseError::builder()
-                .detail(
-                    "The number from the device used cannot be updated, but the device status can"
-                        .to_string(),
-                )
-                .status(StatusCode::OK)
-                .title(format!(
-                    "Error to update ip used in the network {} - {:?}",
-                    netw_new.network, x
-                ))
-                .instance(uri.to_string())
-                .build()
-        })?;
-
-        let update_count = UpdateNetworkCount {
-            used: Some(netw_new.used),
-            free: Some(netw_new.free),
-            available: None,
-        };
-
-        state
-            .update::<Network, _>(
-                update_count,
-                Some(HashMap::from([("id", netw_new.id.into())])),
-            )
-            .await
-            .map_err(|x| {
-                let tmp: Builder = ResponseError::from(x).into();
-                tmp.instance(uri.to_string()).build()
-            })?;
-    }
-    Ok(resp)
+    Err::<QueryResult<Device>, ResponseError>(
+        ResponseError::builder()
+            .detail("Not implemented".into())
+            .title("This function has not been implemented yet".to_string())
+            .status(StatusCode::NOT_IMPLEMENTED)
+            .build(),
+    )
 }
 
 pub async fn get_one(
@@ -274,11 +141,9 @@ pub async fn ping(
 
     if ipam_services::Ping::Pong == ipam_services::ping(ip, 2000).await {
         if device.status != Status::Online {
-            let mut updater = UpdateDevice::default();
-            updater.status = Some(Status::Online);
             state
                 .update::<Device, _>(
-                    updater,
+                    Status::Online,
                     Some(HashMap::from([
                         ("ip", ip.into()),
                         ("network_id", network_id.into()),
@@ -334,11 +199,9 @@ pub async fn ping(
         Ok(Ping::Pong)
     } else {
         if device.status == Status::Online || device.status == Status::Reserved {
-            let mut updater = UpdateDevice::default();
-            updater.status = Some(Status::Offline);
             state
                 .update::<Device, _>(
-                    updater,
+                    Status::Offline,
                     Some(HashMap::from([
                         ("ip", ip.into()),
                         ("network_id", network_id.into()),
@@ -351,4 +214,68 @@ pub async fn ping(
         }
         Ok(Ping::Fail)
     }
+}
+
+pub async fn reserve(
+    State(state): State<RepositoryType>,
+    uri: Uri,
+    Query(query_params::ParamDevice { ip, network_id }): Query<query_params::ParamDevice>,
+) -> Result<QueryResult<Device>, ResponseError> {
+    let state = state.lock().await;
+
+    let tmp = state
+        .update(
+            Status::Reserved,
+            Some(HashMap::from([
+                ("ip", ip.into()),
+                ("network_id", network_id.into()),
+            ])),
+        )
+        .await
+        .map_err(|x| Into::<Builder>::into(ResponseError::from(x)).instance(uri.to_string()))?;
+
+    let mut network = state
+        .get::<Network>(Some(HashMap::from([("id", network_id.into())])))
+        .await
+        .unwrap()
+        .remove(0);
+    let mut id_to_update = Some(network.id);
+
+    while let Some(id) = id_to_update {
+        let result_used = network.used.add(1 as u32);
+        let result_free = network.free.sub(1 as u32);
+        if result_free.is_err() && result_used.is_err() {
+            return Err(ResponseError::builder()
+                .title("Errir to update".into())
+                .detail(format!(
+                    "Error to update HostCounter in the network {}",
+                    network.network
+                ))
+                .instance(uri.to_string())
+                .build());
+        }
+
+        let updater = UpdateNetworkCount {
+            used: Some(network.used.clone()),
+            free: Some(network.free.clone()),
+            available: None,
+        };
+        state
+            .update::<Network, _>(updater, Some(HashMap::from([("id", id.into())])))
+            .await
+            .map_err(|x| Into::<Builder>::into(ResponseError::from(x)).instance(uri.to_string()))?;
+        println!("{:?}", id_to_update);
+        if let Some(father) = network.father {
+            network = state
+                .get::<Network>(Some(HashMap::from([("id", father.into())])))
+                .await
+                .unwrap()
+                .remove(0);
+            id_to_update = Some(network.id);
+        } else {
+            id_to_update = None;
+        }
+    }
+
+    Ok(tmp)
 }

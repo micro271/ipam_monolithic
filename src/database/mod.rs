@@ -88,7 +88,7 @@ impl Repository for SqliteRepository {
                 Err(e) => return Err(RepositoryError::Sqlx(e.to_string())),
             };
             let mut resp_data = Vec::new();
-            
+
             let mut count = 0;
             for data in data {
                 resp_data.push(data.clone());
@@ -168,7 +168,7 @@ impl Repository for SqliteRepository {
                         }
                     }
                     tracing::debug!("{}", query);
-                    tracing::debug!("{:?}",data_pos);
+                    tracing::debug!("{:?}", data_pos);
                     let mut resp = sqlx::query(&query);
 
                     for i in 1..pos {

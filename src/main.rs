@@ -45,7 +45,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             "/subnet",
             post(network::create_network_child).get(network::get_all_with_father),
         )
-        
         .route(
             "/:id",
             get(network::get_one)
@@ -65,7 +64,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             "/:network_id",
             get(device::get_all).post(device::create_all_devices),
         ) // create, update and get all devices
-        .route("/ping", patch(device::ping));
+        .route("/ping", patch(device::ping))
+        .route("/reserve", patch(device::reserve));
 
     let user = Router::new().route("/", post(auth::create));
 

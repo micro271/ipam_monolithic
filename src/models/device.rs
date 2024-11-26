@@ -10,7 +10,6 @@ pub struct UpdateDevice {
     pub room: Option<String>,
     pub network_id: Option<Uuid>,
     pub credential: Option<Credential>,
-    pub status: Option<Status>,
 }
 
 #[derive(Deserialize, Serialize, Debug, Clone)]

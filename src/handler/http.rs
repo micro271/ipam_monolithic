@@ -46,7 +46,7 @@ pub async fn http_view_network(
     let state = state.lock().await;
 
     let networks = state
-        .get::<Network>(Some(HashMap::from([("father",TypeTable::Null)])))
+        .get::<Network>(Some(HashMap::from([("father", TypeTable::Null)])))
         .await
         .unwrap_or_default();
 
@@ -72,7 +72,10 @@ pub async fn http_view_devices(
         .get::<Network>(Some(HashMap::from([("id", network_id.into())])))
         .await
         .unwrap();
-    let network_chiled = state.get::<Network>(Some(HashMap::from([("father", network_id.into())]))).await.unwrap_or_default();
+    let network_chiled = state
+        .get::<Network>(Some(HashMap::from([("father", network_id.into())])))
+        .await
+        .unwrap_or_default();
     let devices = state
         .get::<Device>(Some(HashMap::from([("network_id", network_id.into())])))
         .await

@@ -29,15 +29,9 @@ const reserve_ip = (event) => {
     const network_id = document.getElementById('network_id').textContent;
 
     if (button_reserved){
-        button_reserved.addEventListener('click', async (event) => {
-            const resp = await fetch(`/api/v1/device?ip=${ip}&network_id=${network_id}`,{
-                method: 'PATCH',
-                body: JSON.stringify({  
-                    status: 'Reserved'
-                }),
-                headers: {
-                    'Content-type': 'application/json'
-                }
+        button_reserved.addEventListener('click', async () => {
+            const resp = await fetch(`/api/v1/device/reserve?ip=${ip}&network_id=${network_id}`,{
+                method: 'PATCH'
             });
             console.log(await resp.json());
             if (resp.ok) {

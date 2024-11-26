@@ -152,10 +152,6 @@ impl<'a> Updatable<'a> for UpdateDevice {
             pair.insert("room", tmp.into());
         }
 
-        if let Some(status) = self.status {
-            pair.insert("status", status.into());
-        }
-
         if let Some(cred) = self.credential {
             let tmp = if cred.password.is_empty() && cred.username.is_empty() {
                 None
@@ -171,6 +167,12 @@ impl<'a> Updatable<'a> for UpdateDevice {
         } else {
             None
         }
+    }
+}
+
+impl<'a> Updatable<'a> for Status {
+    fn get_pair(self) -> Option<HashMap<&'a str, TypeTable>> {
+        Some(HashMap::from([("status", self.into())]))
     }
 }
 
