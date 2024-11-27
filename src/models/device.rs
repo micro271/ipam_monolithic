@@ -38,6 +38,7 @@ pub enum Status {
     Offline,
 }
 
+
 impl Default for Status {
     fn default() -> Self {
         Self::Unknown

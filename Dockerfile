@@ -10,6 +10,12 @@ FROM debian
 
 WORKDIR /app
 
-COPY --from=builder /app/target/release/api_ipam .
+COPY --from=builder /app/target/release/ipam_rs .
+
+COPY .env .
+
+COPY templates ./templates
+
+COPY static ./static
 
 CMD ["./api_ipam"]

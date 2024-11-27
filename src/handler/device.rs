@@ -73,14 +73,41 @@ pub async fn update(
     uri: Uri,
     Query(query_params::ParamDevice { ip, network_id }): Query<query_params::ParamDevice>,
     Json(mut device): Json<UpdateDevice>,
-) -> Result<impl IntoResponse, ResponseError> {
-    Err::<QueryResult<Device>, ResponseError>(
-        ResponseError::builder()
-            .detail("Not implemented".into())
-            .title("This function has not been implemented yet".to_string())
-            .status(StatusCode::NOT_IMPLEMENTED)
-            .build(),
-    )
+) -> Result<QueryResult<Device>, ResponseError> {
+
+    if claim.role != Role::Admin {
+        return Err(ResponseError::builder()
+            .instance(uri.to_string())
+            .detail(format!("The user {} isn't Admin", claim.username))
+            .title("Unauthorized".to_string())
+            .status(StatusCode::UNAUTHORIZED)
+            .build()
+        )
+    }
+    let state = state.lock().await;
+    
+    if device.ip.is_some() || device.network_id.is_some() {
+        if device.ip.as_ref().map(|x| x != &ip).unwrap_or(false) || device.network_id.map(|x| x != network_id ).unwrap_or(false) {
+
+            let ip_to_delete = match device.ip {
+                Some(e) => e,
+                _ => ip,
+            };
+
+            let network_id_to_delete = match device.network_id {
+                Some(e) => e,
+                _ => network_id,
+            };
+
+
+            state.delete::<Device>(Some(HashMap::from([("ip", ip_to_delete.into()), ("network_id", network_id_to_delete.into())]))).await?;
+        } else {
+            device.ip = None;
+            device.network_id = None;
+        }
+    }
+
+    Ok(state.update::<Device,_>(device, Some(HashMap::from([("ip", ip.into()),("network_id",network_id.into())]))).await.map_err(|x|Into::<Builder>::into(ResponseError::from(x)).instance(uri.to_string()))?)
 }
 
 pub async fn get_one(
