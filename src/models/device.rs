@@ -24,6 +24,12 @@ pub struct Device {
     pub credential: Option<Credential>,
 }
 
+impl std::cmp::PartialEq<IpAddr> for Device{
+    fn eq(&self, other: &IpAddr) -> bool {
+        self.ip.eq(other)
+    }
+}
+
 #[derive(Deserialize, Serialize, Debug, Clone)]
 pub struct Credential {
     pub username: String,

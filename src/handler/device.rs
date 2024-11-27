@@ -6,7 +6,7 @@ use libipam::{
     response_error::{Builder, ResponseError},
 };
 
-use std::net::IpAddr;
+use std::{net::IpAddr, collections::HashSet};
 
 pub async fn create(
     State(state): State<RepositoryType>,
@@ -44,12 +44,41 @@ pub async fn create_all_devices(
         .await?
         .remove(0);
 
-    match models_data_entry::create_all_devices(network.network, network_id) {
-        Some(e) => Ok(state.insert::<Device>(e).await?),
-        None => Err(ResponseError::builder()
-            .status(StatusCode::NO_CONTENT)
-            .build()),
+    if let Ok(devs) = state.get::<Device>(Some(HashMap::from([("network_id", network_id.into())]))).await {
+        let ips = devs.into_iter().map(|x|x.ip).collect::<HashSet<IpAddr>>();
+
+        if ips.len() != *network.available as usize {
+            let to_insert: Vec<Device> = network.network.hosts()
+                .filter(|ip | !ips.contains(ip) )
+                .map(|ip| Device {
+                        ip,
+                        description: None,
+                        office_id: None,
+                        rack: None,
+                        room: None,
+                        status: Status::default(),
+                        network_id,
+                        credential: None,
+                }).collect();
+            Ok(state.insert(to_insert).await?)
+        } else {
+            Err(
+                ResponseError::builder()
+                    .title("The devices alreade exist".to_string())
+                    .detail("We haven't found any missing devices".to_string())
+                    .status(StatusCode::BAD_REQUEST)
+                    .build()
+            )
+        }
+    } else {
+        match models_data_entry::create_all_devices(network.network, network_id) {
+            Some(e) => Ok(state.insert::<Device>(e).await?),
+            None => Err(ResponseError::builder()
+                .status(StatusCode::NO_CONTENT)
+                .build()),
+        }
     }
+
 }
 
 pub async fn get_all(
@@ -291,7 +320,7 @@ pub async fn reserve(
             .update::<Network, _>(updater, Some(HashMap::from([("id", id.into())])))
             .await
             .map_err(|x| Into::<Builder>::into(ResponseError::from(x)).instance(uri.to_string()))?;
-        println!("{:?}", id_to_update);
+        
         if let Some(father) = network.father {
             network = state
                 .get::<Network>(Some(HashMap::from([("id", father.into())])))
