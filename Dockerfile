@@ -18,4 +18,4 @@ COPY templates ./templates
 
 COPY static ./static
 
-CMD ["./api_ipam"]
+CMD ["./ipam_rs"]

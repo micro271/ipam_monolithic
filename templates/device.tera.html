@@ -188,14 +188,22 @@
             {% endif %}
             <button type="button" class="btn btn-primary" id="subnet">Subnet</button>
         </div>
+        {% endif %}
 
-        <!-- MODAL BLOCK-->
+        {% if subnet | length > 0 or devices | length == 0 %}
+        <!-- MODAL BLOCK TO CREATE SUBNET AND MODIFIE -->
         <div class="modal fade" data-bs-backdrop="true" data-bs-keyboard="true" id="subnetting" tabindex="-1"
             aria-labelledby="modalLabel" aria-hidden="true">
             <div class="modal-dialog">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h1 class="modal-title fs-5" id="modalLabel">Create a subnet</h1>
+                        <h1 class="modal-title fs-5" id="modalLabel">
+                            {% if subnet | length > 0 %}
+                            Modify sunbed
+                            {% else %}
+                            Create subnet
+                            {% endif %}
+                        </h1>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
@@ -207,7 +215,7 @@
                         </div>
                         {% endif %}
 
-                        <div class="input-group mb-3">
+                        <div class="input-group mb-3 align-items-center">
                             <span class="input-group-text">Network</span>
                             <input type="text" class="form-control" name="network" disabled>
                             {% if subnet | length > 0 %}

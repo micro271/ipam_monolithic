@@ -68,17 +68,11 @@ if (table_main_network_chiled) {
             const network_input = modal.querySelector("[name='network']");
             const vlan_input = modal.querySelector("[name='vlan']");
             const description_input = modal.querySelector("[name='description']");
-            const avl_input = modal.querySelector("[name='available']");
-            const used_input = modal.querySelector("[name='used']");
-            const free_input = modal.querySelector("[name='free']");
             
             id_input.value = id;
             network_input.value = network.textContent;
             vlan_input.value = vlan.textContent;
             description_input.value = description.textContent;
-            avl_input.value = avl.textContent;
-            used_input.value = used.textContent;
-            free_input.value = free.textContent;
 
             new bootstrap.Modal(modal).show();
 
