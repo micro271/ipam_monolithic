@@ -12,7 +12,7 @@ use uuid::Uuid;
 
 use crate::{
     database::repository::Repository,
-    models::{device::Device, network::Network},
+    models::{device::Device, network::Network, user::Role},
     services::Claims,
 };
 
@@ -76,10 +76,17 @@ pub async fn http_view_devices(
         .get::<Network>(Some(HashMap::from([("father", network_id.into())])))
         .await
         .unwrap_or_default();
-    let devices = state
+
+    let mut devices = state
         .get::<Device>(Some(HashMap::from([("network_id", network_id.into())])))
         .await
         .unwrap_or_default();
+
+    if claim.role != Role::Admin {
+        for dev in devices.iter_mut() {
+            dev.credential = None;
+        }
+    }
     tracing::info!("Network: {:?}", network);
     let mut con = Context::new();
     con.insert("block", "device");

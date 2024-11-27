@@ -17,6 +17,8 @@
         </ul>
     </div>
     <section class="grid-devices">
+
+        <!-- SUBNET BLOCK-->
         {% if subnet | length > 0 %}
         <table class="table table-hover text-center align-middle" id="table_main" style="grid-column: 1/-1;">
             <thead>
@@ -55,6 +57,7 @@
                 {% endfor %}
             </tbody>
         </table>
+        <!-- DEVICES BLOCK-->
         {% elif devices | length > 0 %}
         <div style="grid-column: 1/-1;">
             <button class="btn btn-primary" type="button" id="walk" data-ipam-walk="false">
@@ -78,16 +81,16 @@
             <div data-bs-toggle="popover" data-bs-title="<p class='fw-bold text-center'>{{device.ip}}</p>"
                 data-bs-content="
                         <div class='lh-sm'>
-                            <p><span class='font-monospace'>Status:</span> <span id='data_status' class='fw-bold {% if device.status == 'Online' %}text-online{% elif device.status == 'Offline' %}text-danger{% endif %}'>{{device.status}}</span></p>
-                            <p><span class='font-monospace'>Description:</span> <span class='fw-bold'>{{device.description | default(value='empry')}}</span></p>
-                            <p><span class='font-monospace'>Rack:</span> <span class='fw-bold'>{{device.rack | default(value='empry')}}</span></p>
-                            <p><span class='font-monospace'>Room:</span> <span class='fw-bold'>{{device.room | default(value='empry')}}</span></p>
-                            <p><span class='font-monospace'>Username:</span> {% set user = device.credential.username | default(value='Unknown') %}{% if user | length > 0 %}<span class='fw-bold'>{{user}}</span>{% else %}<span class='fw-bold fst-italic'>empty</span>{% endif %}</span></p>
-                            <p><span class='font-monospace'>Password:</span> {% set pass = device.credential.password | default(value='Unknown') %}{% if pass | length > 0 %}<span class='fw-bold'>{{pass}}</span>{% else %}<span class='fw-bold fst-italic text-danger'>empty</span>{% endif %}</span></p>
+                            <p><span class='font-monospace'>Status:</span> <span id='data_status' class='fw-bold {% if device.status == 'Online' %}text-online{% elif device.status == 'Offline' %}text-danger{% endif %}' id='status'>{{device.status}}</span></p>
+                            <p><span class='font-monospace'>Description:</span> <span class='fw-bold' id='description'>{{device.description | default(value='empty')}}</span></p>
+                            <p><span class='font-monospace'>Rack:</span> <span class='fw-bold' id='rack'>{{device.rack | default(value='empty')}}</span></p>
+                            <p><span class='font-monospace'>Room:</span> <span class='fw-bold' id='room'>{{device.room | default(value='empty')}}</span></p>
+                            <p><span class='font-monospace'>Username:</span> {% set user = device.credential.username | default(value='Unknown') %} <span class='fw-bold' id='username'>{{user}}</span></p>
+                            <p><span class='font-monospace'>Password:</span> {% set pass = device.credential.password | default(value='Unknown') %}<span class='fw-bold' id='password'>{{pass}}</span></p>
                             {% if role == 'Admin' %}
-                                <a role='button' class='btn btn-primary btn-sm' data-bs-toggle='modal' data-bs-target='#staticBackdrop'>Edit</a>
+                                <a role='button' class='btn btn-primary btn-sm' id='edit_device'>Edit</a>
                             {% if device.status == 'Unknown' %}
-                                <a role='button' class='btn btn-light btn-sm ms-2' id='{{device.ip | replace(from='.', to='_')}}'>Reserve</a>{% endif %}
+                                <a role='button' class='btn btn-light btn-sm ms-2' id='to_reserve'>Reserve</a>{% endif %}
                             {% endif %}
                         </div>
                         " role="button">
@@ -103,8 +106,80 @@
             </div>
         </article>
         {% endfor %}
+        <!-- If there are fewer devices than available in the network, we can create the missing ones -->
+        {% if network.available < devices | length %}
+        <div style="grid-column: 1/-1;">
+            <button type="button" class="btn btn-primary" id="new_device_new">Create devices missing</button>
+        </div>
+        {% endif %}
+        <!-- MODAL TO MODIFY A DEVICE -->
+        <div class="modal fade" data-bs-backdrop="true" data-bs-keyboard="true" id="subnetting" tabindex="-1"
+            aria-labelledby="modalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h1 class="modal-title fs-5" id="modalLabel">Device</h1>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
 
+                        {% if subnet | length > 0 %}
+                        <div class="input-group mb-3">
+                            <span class="input-group-text" id="network_id_modal">id</span>
+                            <input name="id" type="text" class="form-control" aria-describedby="network_id_modal" disabled>
+                        </div>
+                        {% endif %}
+
+                        <div class="input-group mb-3 align-items-center">
+                            <span class="input-group-text">ip</span>
+                            <input type="text" class="form-control" name="address" disabled>
+                            <div class="form-check form-switch ms-2">
+                                <input class="form-check-input" type="checkbox" role="switch" id="checkbox_to_change_address">
+                                <label class="form-check-label" for="checkbox_to_change_address">Edit</label>
+                            </div>
+                        </div>
+
+                        <div class="input-group mb-3">
+                            <span class="input-group-text" id="description_device">description</span>
+                            <input name="description" type="text" class="form-control"
+                                aria-describedby="description_device">
+                        </div>
+
+                        <div class="input-group mb-3">
+                            <span class="input-group-text" id="device_rack">rack</span>
+                            <input name="rack" type="text" class="form-control"
+                                aria-describedby="device_rack">
+                        </div>
+
+                        <div class="input-group mb-3">
+                            <span class="input-group-text" id="device_room">room</span>
+                            <input name="room" type="text" class="form-control"
+                                aria-describedby="device_room">
+                        </div>
+
+                        <div class="input-group mb-3">
+                            <span class="input-group-text" id="device_username">username</span>
+                            <input name="username" type="text" class="form-control"
+                                aria-describedby="device_username">
+                        </div>
+
+                        <div class="input-group mb-3">
+                            <span class="input-group-text" id="device_password">password</span>
+                            <input name="password" type="text" class="form-control"
+                                aria-describedby="device_username">
+                        </div>
+                    </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <button type="button" class="btn btn-primary save">Save</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
         <script src="/static/device.exist.js" type="module"></script>
+        
+        <!-- If there aren't any subnets or devices, we can create them -->
         {% else %}
         <div style="grid-column: 1/-1;">
             <button type="button" class="btn btn-primary" id="new_device_new">New device</button>
@@ -112,12 +187,10 @@
             <button type="button" class="btn btn-warning" id="new_device_create_all_empty">Create all devices</button>
             {% endif %}
             <button type="button" class="btn btn-primary" id="subnet">Subnet</button>
-
         </div>
-        {% endif %}
-    </section>
 
-    <div class="modal fade" data-bs-backdrop="true" data-bs-keyboard="true" id="subnetting" tabindex="-1"
+        <!-- MODAL BLOCK-->
+        <div class="modal fade" data-bs-backdrop="true" data-bs-keyboard="true" id="subnetting" tabindex="-1"
             aria-labelledby="modalLabel" aria-hidden="true">
             <div class="modal-dialog">
                 <div class="modal-content">
@@ -159,34 +232,17 @@
                                 aria-describedby="description_network_modal">
                         </div>
 
-                        <div class="input-group mb-3">
-                            <span class="input-group-text" id="network_available_address_modal">available</span>
-                            <input name="available" type="text" class="form-control"
-                                aria-describedby="network_available_address_modal" disabled>
                         </div>
-
-                        <div class="input-group mb-3">
-                            <span class="input-group-text" id="network_used_address_modal">used</span>
-                            <input name="used" type="text" class="form-control"
-                                aria-describedby="network_used_address_modal" disabled>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <button type="button" class="btn btn-primary save">Save</button>
                         </div>
-
-                        <div class="input-group mb-3">
-                            <span class="input-group-text" id="network_free_address_modal">free</span>
-                            <input name="free" type="text" class="form-control"
-                                aria-describedby="network_free_address_modal" disabled>
-                        </div>
-
-
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                        <button type="button" class="btn btn-primary save">Save</button>
                     </div>
                 </div>
             </div>
         </div>
-</div>
+        {% endif %}
+    </section>
 
 <script src="/static/bootstrap.min.js"></script>
 <script src="/static/device.js" type="module"></script>

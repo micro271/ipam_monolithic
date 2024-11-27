@@ -21,25 +21,120 @@ const reserve_ip = (event) => {
     const pop_over = bootstrap.Popover.getInstance(popOver)
     const id_father = pop_over.tip.id;
     const father = document.getElementById(id_father);
+    const body = father.querySelector(".popover-body");
+
 
     const status = father.querySelector("#data_status");
-    const ip = father.querySelector('.popover-header').textContent;
+    const ip = father.querySelector('.popover-header p').textContent;
     const ip_ = ip.replaceAll('.','_');
-    const button_reserved = document.getElementById(ip_);    
+
+    const button_reserved = body.querySelector("#to_reserve");
     const network_id = document.getElementById('network_id').textContent;
 
-    if (button_reserved){
-        button_reserved.addEventListener('click', async () => {
-            const resp = await fetch(`/api/v1/device/reserve?ip=${ip}&network_id=${network_id}`,{
-                method: 'PATCH'
-            });
-            console.log(await resp.json());
-            if (resp.ok) {
-                location.reload(true);
-            }
-        })
+    const event_reserve = async () => {
+        
+        const resp = await fetch(`/api/v1/device/reserve?ip=${ip}&network_id=${network_id}`,{
+            method: 'PATCH'
+        });
+
+        if (resp.ok) {
+            location.reload();
+        }
     }
-    
+
+    if (button_reserved){
+        button_reserved.addEventListener('click',event_reserve)
+    }
+
+    const event_edit = () => {
+        const modal = document.querySelector(".modal");
+        
+        const description = body.querySelector("#description");
+        const rack = body.querySelector("#rack");
+        const room = body.querySelector("#room");
+        const user = body.querySelector("#username");
+        const pass = body.querySelector("#password");
+
+        const input_address = modal.querySelector("[name='address']")
+        const input_description = modal.querySelector("[name='description']")
+        const input_rack = modal.querySelector("[name='rack']")
+        const input_room = modal.querySelector("[name='room']")
+        const input_user = modal.querySelector("[name='username']")
+        const input_pass = modal.querySelector("[name='password']")
+        const checkbox = modal.querySelector("#checkbox_to_change_address");
+
+        checkbox.addEventListener('change', () => {
+            if (checkbox.checked) {
+                input_address.disabled = false;
+            } else {
+                input_address.disabled = false;
+            }
+        });
+
+        input_address.value = ip;
+        input_description.value = description.textContent;
+        input_rack.value = rack.textContent;
+        input_room.value = room.textContent;
+        input_user.value = user.textContent;
+        input_pass.value = pass.textContent;
+
+        pop_over.hide();
+        new bootstrap.Modal(modal).show();
+
+        const save = modal.querySelector(".save");
+        const event_save = async () => {
+            const send = {};
+            if (description.textContent != input_description.value) {
+                send.description = input_description.value;
+            }
+
+            if (rack.textContent != input_rack.value) {
+                send.rack = input_rack.value;
+            }
+
+            if (room.textContent != input_room.value) {
+                send.room = input_room.value;
+            }
+
+            if (pass.textContent != input_pass.value || user.textContent != input_user.value) {
+                send.credential = {
+                    password: input_pass.value,
+                    username: input_user.value,
+                };
+            }
+            
+            if (description.textContent != input_description.value) {
+                send.description = input_description.value;
+            }
+            console.log(send);
+            if (Object.keys(send).length > 0) {
+                const network_id = document.getElementById("network_id").textContent;
+
+                const resp = await fetch(`/api/v1/device?ip=${ip}&network_id=${network_id}`, {
+                    method: 'PATCH',
+                    headers: {'Content-type':'application/json'},
+                    body: JSON.stringify(send)
+                })
+
+                if (resp.ok) {
+                    bootstrap.Modal.getInstance(modal).hide();
+                    location.reload(true);
+                }
+            }
+        }
+        save.addEventListener('click', event_save);
+        modal.addEventListener('hidden.bs.modal',() => modal.querySelector(`.save`).removeEventListener('click',event_save));
+    }
+
+    const buttono_edit = body.querySelector("#edit_device");
+    buttono_edit.addEventListener("click", event_edit)
+
+    popOver.addEventListener('hidden.bs.popover', () => {
+        if (button_reserved) {
+            button_reserved.removeEventListener('click',event_reserve);
+        }
+        buttono_edit.removeEventListener('click', event_edit);
+    })
 }));
 
 [...document.querySelectorAll("[data-ipam-ping]")].forEach(anchor => {
