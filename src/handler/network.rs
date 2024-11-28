@@ -15,16 +15,14 @@ pub async fn create(
     uri: Uri,
     Json(netw): Json<models_data_entry::Network>,
 ) -> Result<impl IntoResponse, ResponseError> {
+
     if claim.role != Role::Admin {
-        if claim.role != Role::Admin {
-            return Err(ResponseError::builder()
-                .status(StatusCode::UNAUTHORIZED)
-                .detail(format!("User {} not authorizedh", claim.sub))
-                .title("Unauthorized".into())
-                .instance(uri.to_string())
-                .build()
-            );
-        }
+        return Err(ResponseError::builder()
+            .status(StatusCode::UNAUTHORIZED)
+            .detail(format!("User {} not authorizedh", claim.sub))
+            .title("Unauthorized".into())
+            .instance(uri.to_string())
+            .build());
     }
 
     let state = state.lock().await;
@@ -58,15 +56,12 @@ pub async fn update(
     Json(network): Json<UpdateNetwork>,
 ) -> Result<impl IntoResponse, ResponseError> {
     if claim.role != Role::Admin {
-        if claim.role != Role::Admin {
-            return Err(ResponseError::builder()
-                .status(StatusCode::UNAUTHORIZED)
-                .detail(format!("User {} not authorizedh", claim.sub))
-                .title("Unauthorized".into())
-                .instance(uri.to_string())
-                .build()
-            );
-        }
+        return Err(ResponseError::builder()
+            .status(StatusCode::UNAUTHORIZED)
+            .detail(format!("User {} not authorizedh", claim.sub))
+            .title("Unauthorized".into())
+            .instance(uri.to_string())
+            .build());
     }
 
     let state = state.lock().await;
@@ -150,8 +145,7 @@ pub async fn create_network_child(
             .status(StatusCode::UNAUTHORIZED)
             .detail(format!("User {} not authorizedh", claim.sub))
             .title("Unauthorized".into())
-            .build()
-        );
+            .build());
     }
     let state = state.lock().await;
     let mut network = state
@@ -187,7 +181,6 @@ pub async fn create_network_child(
                     Ok(e) => {
                         let mut id_to_update = Some(network.id);
                         while let Some(network_to_update) = id_to_update {
-
                             let resp_sub = network.available.sub(len as u32);
                             if resp_sub.is_err() {
                                 break;
@@ -206,13 +199,19 @@ pub async fn create_network_child(
                                 )
                                 .await;
                             if network.father.is_some() {
-                                network = state.get::<Network>(Some(HashMap::from([("id", network.father.into())]))).await?.remove(0);
+                                network = state
+                                    .get::<Network>(Some(HashMap::from([(
+                                        "id",
+                                        network.father.into(),
+                                    )])))
+                                    .await?
+                                    .remove(0);
                                 id_to_update = Some(network.id);
                             } else {
                                 id_to_update = None;
                             }
                         }
-                        Ok(e.into())
+                        Ok(e)
                     }
                     Err(e) => Err(Into::<Builder>::into(ResponseError::from(e))
                         .instance(uri.to_string())
@@ -254,7 +253,7 @@ pub async fn create_network_child(
             used: 0.into(),
             free: HostCount::new((&ip).into()),
         };
-        
+
         let new = state
             .insert::<Network>(vec![new_network])
             .await
@@ -304,15 +303,13 @@ pub async fn clean(
     Extension(claim): Extension<Claims>,
     Path(id): Path<uuid::Uuid>,
 ) -> Result<QueryResult<Network>, ResponseError> {
-
     if claim.role != Role::Admin {
         return Err(ResponseError::builder()
             .status(StatusCode::UNAUTHORIZED)
             .detail(format!("User {} not authorizedh", claim.sub))
             .title("Unauthorized".into())
             .instance(uri.to_string())
-            .build()
-        );
+            .build());
     }
 
     let state = state.lock().await;

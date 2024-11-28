@@ -102,6 +102,10 @@ const reserve_ip = (event) => {
                     username: input_user.value,
                 };
             }
+
+            if (input_address.value != ip && checkbox.checked) {
+                send.ip = input_address.value;
+            }
             
             if (description.textContent != input_description.value) {
                 send.description = input_description.value;
@@ -196,3 +200,23 @@ document.getElementById("walk").addEventListener("click", async (event) => {
         }
     }    
 })
+
+
+const button_create_missing = document.getElementById("missing_devices");
+
+if (button_create_missing) {
+    button_create_missing.addEventListener('click', async (e) => {
+        e.preventDefault();
+
+        const endpoint = document.getElementById("network_id").innerHTML;
+
+        const resp = await fetch(`/api/v1/device/${endpoint}`,{
+            headers: {"Content-type": "application/json"},
+            method: 'POST',
+        });
+        
+        if (resp.ok) {
+            location.reload(true)
+        }
+    })
+}

@@ -38,7 +38,7 @@ pub async fn fallback(req: Request) -> impl IntoResponse {
     Html(tera.render("fallback.html", &context).unwrap()).into_response()
 }
 
-#[instrument]
+
 pub async fn http_view_network(
     State(state): State<RepositoryType>,
     Extension(claim): Extension<Claims>,
@@ -60,7 +60,7 @@ pub async fn http_view_network(
     let tera = TEMPLATES.lock().await;
     Html(tera.render("index.html", &cont).unwrap()).into_response()
 }
-#[instrument]
+
 pub async fn http_view_devices(
     State(state): State<RepositoryType>,
     Extension(claim): Extension<Claims>,
@@ -81,6 +81,10 @@ pub async fn http_view_devices(
         .get::<Device>(Some(HashMap::from([("network_id", network_id.into())])))
         .await
         .unwrap_or_default();
+
+    if !devices.is_empty() {
+        devices.sort_by_key(|x| x.ip);
+    }
 
     if claim.role != Role::Admin {
         for dev in devices.iter_mut() {

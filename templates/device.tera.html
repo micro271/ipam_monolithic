@@ -63,6 +63,13 @@
             <button class="btn btn-primary" type="button" id="walk" data-ipam-walk="false">
                 Walk
             </button>
+
+            <!-- If there are fewer devices than available in the network, we can create the missing ones -->
+            {% if devices | length < network.available %}
+            <button class="btn btn-danger" type="button" id="missing_devices">
+                Create missing devices
+            </button>
+            {% endif %}
         </div>
         {% for device in devices %}
         <article style="flex-grow: 1;"
@@ -106,12 +113,7 @@
             </div>
         </article>
         {% endfor %}
-        <!-- If there are fewer devices than available in the network, we can create the missing ones -->
-        {% if network.available < devices | length %}
-        <div style="grid-column: 1/-1;">
-            <button type="button" class="btn btn-primary" id="new_device_new">Create devices missing</button>
-        </div>
-        {% endif %}
+        
         <!-- MODAL TO MODIFY A DEVICE -->
         <div class="modal fade" data-bs-backdrop="true" data-bs-keyboard="true" id="subnetting" tabindex="-1"
             aria-labelledby="modalLabel" aria-hidden="true">

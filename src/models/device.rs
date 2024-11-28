@@ -24,7 +24,7 @@ pub struct Device {
     pub credential: Option<Credential>,
 }
 
-impl std::cmp::PartialEq<IpAddr> for Device{
+impl std::cmp::PartialEq<IpAddr> for Device {
     fn eq(&self, other: &IpAddr) -> bool {
         self.ip.eq(other)
     }
@@ -43,7 +43,6 @@ pub enum Status {
     Online,
     Offline,
 }
-
 
 impl Default for Status {
     fn default() -> Self {

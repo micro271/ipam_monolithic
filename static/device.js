@@ -53,15 +53,11 @@ if (table_main_network_chiled) {
             const btn = event.currentTarget;
             const row_number = btn.getAttribute("data-row");
             const row = table.rows[row_number];
-            
 
             const id = row.querySelector("[data-name='id']").textContent;
             const network = row.querySelector("[data-name='network'] a");
             const vlan = row.querySelector("[data-name='vlan']");
             const description = row.querySelector("[data-name='description']");
-            const avl = row.querySelector("[data-name='available']");
-            const used = row.querySelector("[data-name='used']");
-            const free = row.querySelector("[data-name='free']");
 
             const modal = document.querySelector(".modal");
             const id_input = modal.querySelector("[name='id']");

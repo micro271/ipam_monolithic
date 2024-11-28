@@ -6,7 +6,7 @@ use libipam::{
     response_error::{Builder, ResponseError},
 };
 
-use std::{net::IpAddr, collections::HashSet};
+use std::{collections::HashSet, net::IpAddr};
 
 pub async fn create(
     State(state): State<RepositoryType>,
@@ -44,31 +44,35 @@ pub async fn create_all_devices(
         .await?
         .remove(0);
 
-    if let Ok(devs) = state.get::<Device>(Some(HashMap::from([("network_id", network_id.into())]))).await {
-        let ips = devs.into_iter().map(|x|x.ip).collect::<HashSet<IpAddr>>();
+    if let Ok(devs) = state
+        .get::<Device>(Some(HashMap::from([("network_id", network_id.into())])))
+        .await
+    {
+        let ips = devs.into_iter().map(|x| x.ip).collect::<HashSet<IpAddr>>();
 
         if ips.len() != *network.available as usize {
-            let to_insert: Vec<Device> = network.network.hosts()
-                .filter(|ip | !ips.contains(ip) )
+            let to_insert: Vec<Device> = network
+                .network
+                .hosts()
+                .filter(|ip| !ips.contains(ip))
                 .map(|ip| Device {
-                        ip,
-                        description: None,
-                        office_id: None,
-                        rack: None,
-                        room: None,
-                        status: Status::default(),
-                        network_id,
-                        credential: None,
-                }).collect();
+                    ip,
+                    description: None,
+                    office_id: None,
+                    rack: None,
+                    room: None,
+                    status: Status::default(),
+                    network_id,
+                    credential: None,
+                })
+                .collect();
             Ok(state.insert(to_insert).await?)
         } else {
-            Err(
-                ResponseError::builder()
-                    .title("The devices alreade exist".to_string())
-                    .detail("We haven't found any missing devices".to_string())
-                    .status(StatusCode::BAD_REQUEST)
-                    .build()
-            )
+            Err(ResponseError::builder()
+                .title("The devices alreade exist".to_string())
+                .detail("We haven't found any missing devices".to_string())
+                .status(StatusCode::BAD_REQUEST)
+                .build())
         }
     } else {
         match models_data_entry::create_all_devices(network.network, network_id) {
@@ -78,7 +82,6 @@ pub async fn create_all_devices(
                 .build()),
         }
     }
-
 }
 
 pub async fn get_all(
@@ -88,10 +91,11 @@ pub async fn get_all(
 ) -> Result<QueryResult<Device>, ResponseError> {
     let state = state.lock().await;
     let condition = HashMap::from([("network_id", network_id.into())]);
-    let devices = state.get::<Device>(Some(condition)).await.map_err(|x| {
+    let mut devices = state.get::<Device>(Some(condition)).await.map_err(|x| {
         let tmp: Builder = ResponseError::from(x).into();
         tmp.instance(uri.to_string()).build()
     })?;
+    devices.sort_by_key(|x| x.ip);
 
     Ok(devices.into())
 }
@@ -101,42 +105,74 @@ pub async fn update(
     Extension(claim): Extension<Claims>,
     uri: Uri,
     Query(query_params::ParamDevice { ip, network_id }): Query<query_params::ParamDevice>,
-    Json(mut device): Json<UpdateDevice>,
+    Json(device): Json<UpdateDevice>,
 ) -> Result<QueryResult<Device>, ResponseError> {
-
     if claim.role != Role::Admin {
         return Err(ResponseError::builder()
             .instance(uri.to_string())
             .detail(format!("The user {} isn't Admin", claim.username))
             .title("Unauthorized".to_string())
             .status(StatusCode::UNAUTHORIZED)
-            .build()
-        )
+            .build());
     }
     let state = state.lock().await;
-    
-    if device.ip.is_some() || device.network_id.is_some() {
-        if device.ip.as_ref().map(|x| x != &ip).unwrap_or(false) || device.network_id.map(|x| x != network_id ).unwrap_or(false) {
 
+    let network = state
+        .get::<Network>(Some(HashMap::from([(
+            "id",
+            match device.network_id {
+                Some(e) => e,
+                None => network_id,
+            }
+            .into(),
+        )])))
+        .await?
+        .remove(0);
+
+    if device.ip.is_some() || device.network_id.is_some() {
+        if device.ip.as_ref().map(|x| x != &ip).unwrap_or(false)
+            || device.network_id.map(|x| x != network_id).unwrap_or(false)
+        {
             let ip_to_delete = match device.ip {
                 Some(e) => e,
                 _ => ip,
             };
-
-            let network_id_to_delete = match device.network_id {
-                Some(e) => e,
-                _ => network_id,
-            };
-
-
-            state.delete::<Device>(Some(HashMap::from([("ip", ip_to_delete.into()), ("network_id", network_id_to_delete.into())]))).await?;
+            if network.network.contains(&ip_to_delete) {
+                state
+                    .delete::<Device>(Some(HashMap::from([
+                        ("ip", ip_to_delete.into()),
+                        ("network_id", network.id.into()),
+                    ])))
+                    .await?;
+            } else {
+                return Err(ResponseError::builder()
+                    .detail(format!(
+                        "Ip {:?} or network {:?} is not compatible",
+                        device.ip, network.network
+                    ))
+                    .title("Conflict".to_string())
+                    .status(StatusCode::BAD_REQUEST)
+                    .build());
+            }
         } else {
-            device.ip = None;
-            device.network_id = None;
+            return Err(ResponseError::builder()
+                .detail("The data entry (ip or network) is the same as the data in the database".to_string())
+                .title("Nothing happend".to_string())
+                .status(StatusCode::BAD_REQUEST)
+                .build());
         }
     }
 
-    Ok(state.update::<Device,_>(device, Some(HashMap::from([("ip", ip.into()),("network_id",network_id.into())]))).await.map_err(|x|Into::<Builder>::into(ResponseError::from(x)).instance(uri.to_string()))?)
+    Ok(state
+        .update::<Device, _>(
+            device,
+            Some(HashMap::from([
+                ("ip", ip.into()),
+                ("network_id", network_id.into()),
+            ])),
+        )
+        .await
+        .map_err(|x| Into::<Builder>::into(ResponseError::from(x)).instance(uri.to_string()))?)
 }
 
 pub async fn get_one(
@@ -195,7 +231,7 @@ pub async fn ping(
         .map_err(|x| Into::<Builder>::into(ResponseError::from(x)).instance(uri.to_string()))?
         .remove(0);
 
-    if ipam_services::Ping::Pong == ipam_services::ping(ip, 2000).await {
+    if ipam_services::Ping::Pong == ipam_services::ping(ip, 1000).await {
         if device.status != Status::Online {
             state
                 .update::<Device, _>(
@@ -254,7 +290,7 @@ pub async fn ping(
 
         Ok(Ping::Pong)
     } else {
-        if device.status == Status::Online || device.status == Status::Reserved {
+        if device.status == Status::Online {
             state
                 .update::<Device, _>(
                     Status::Offline,
@@ -298,8 +334,8 @@ pub async fn reserve(
     let mut id_to_update = Some(network.id);
 
     while let Some(id) = id_to_update {
-        let result_used = network.used.add(1 as u32);
-        let result_free = network.free.sub(1 as u32);
+        let result_used = network.used.add(1_u32);
+        let result_free = network.free.sub(1_u32);
         if result_free.is_err() && result_used.is_err() {
             return Err(ResponseError::builder()
                 .title("Errir to update".into())
@@ -320,7 +356,7 @@ pub async fn reserve(
             .update::<Network, _>(updater, Some(HashMap::from([("id", id.into())])))
             .await
             .map_err(|x| Into::<Builder>::into(ResponseError::from(x)).instance(uri.to_string()))?;
-        
+
         if let Some(father) = network.father {
             network = state
                 .get::<Network>(Some(HashMap::from([("id", father.into())])))
