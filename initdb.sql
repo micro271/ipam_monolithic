@@ -30,9 +30,19 @@ CREATE TABLE IF NOT EXISTS devices (
     FOREIGN KEY (office_id) REFERENCES offices(id) ON DELETE SET NULL
 );
 
+CREATE TABLE IF NOT EXISTS services {
+    port INTEGER,
+    ip TEXT,
+    network_id TEXT,
+    description TEXT,
+    type TEXT CHECK (type IN ('Container','Local')),
+    PRIMARY KEY (port, ip, network_id),
+    FOREIGN KEY (ip, network_id) REFERENCES devices (uom network_id) ON DELETE CASCADE
+}
+
 CREATE TABLE IF NOT EXISTS users (
     id TEXT PRIMARY KEY,
     username TEXT UNIQUE,
     password TEXT,
-    role TEXT CHECK(role IN ('Admin', 'Operator', 'Guest')) 
+    role TEXT CHECK (role IN ('Admin', 'Operator', 'Guest')) 
 );
