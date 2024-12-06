@@ -99,14 +99,15 @@ impl Repository for SqliteRepository {
                     tmp = match i {
                         TypeTable::String(s) => tmp.bind(s),
                         TypeTable::OptionString(opt) => tmp.bind(opt),
-                        TypeTable::OptionVlan(e) => tmp.bind(e),
+                        TypeTable::OptionI32(e) => tmp.bind(e),
                         TypeTable::Status(status) => tmp.bind(status),
-                        TypeTable::HostCount(i) => tmp.bind(i),
+                        TypeTable::U32(i) => tmp.bind(i),
                         TypeTable::Uuid(e) => tmp.bind(e),
                         TypeTable::Role(r) => tmp.bind(r),
                         TypeTable::OptionUuid(e) => tmp.bind(e),
                         TypeTable::BytesOption(e) => tmp.bind(e),
                         TypeTable::Null => tmp,
+                        TypeTable::U16(e) =>  tmp.bind(e),
                     };
                 }
 
@@ -174,15 +175,16 @@ impl Repository for SqliteRepository {
                     for i in 1..pos {
                         resp = match data_pos.get(&i).unwrap() {
                             TypeTable::OptionUuid(e) => resp.bind(e),
-                            TypeTable::OptionVlan(e) => resp.bind(e),
+                            TypeTable::OptionI32(e) => resp.bind(e),
                             TypeTable::Uuid(e) => resp.bind(e),
                             TypeTable::String(s) => resp.bind(s),
                             TypeTable::OptionString(opt) => resp.bind(opt),
                             TypeTable::Status(status) => resp.bind(status),
-                            TypeTable::HostCount(num) => resp.bind(num),
+                            TypeTable::U32(num) => resp.bind(num),
                             TypeTable::Role(role) => resp.bind(role),
                             TypeTable::BytesOption(e) => resp.bind(e),
                             TypeTable::Null => resp,
+                            TypeTable::U16(e) => resp.bind(e),
                         };
                     }
 
@@ -274,10 +276,11 @@ impl Repository for SqliteRepository {
                         TypeTable::Uuid(e) => sql.bind(e),
                         TypeTable::Role(value) => sql.bind(value),
                         TypeTable::OptionUuid(e) => sql.bind(e),
-                        TypeTable::OptionVlan(e) => sql.bind(e),
+                        TypeTable::OptionI32(e) => sql.bind(e),
                         TypeTable::BytesOption(e) => sql.bind(e),
-                        TypeTable::HostCount(e) => sql.bind(e),
+                        TypeTable::U32(e) => sql.bind(e),
                         TypeTable::Null => sql,
+                        TypeTable::U16(e) => sql.bind(e),
                     };
                 }
 
@@ -336,9 +339,10 @@ impl Repository for SqliteRepository {
                             TypeTable::Status(status) => ex.bind(status),
                             TypeTable::BytesOption(e) => ex.bind(e),
                             TypeTable::Role(role) => ex.bind(role),
-                            TypeTable::OptionVlan(e) => ex.bind(e),
-                            TypeTable::HostCount(i) => ex.bind(i),
+                            TypeTable::OptionI32(e) => ex.bind(e),
+                            TypeTable::U32(i) => ex.bind(i),
                             TypeTable::Null => ex,
+                            TypeTable::U16(e) => ex.bind(e),
                         };
                     }
 

@@ -59,9 +59,7 @@ impl From<Device> for device::Device {
             status: device::Status::default(),
             ip: value.ip,
             description: value.description,
-            office_id: value.office_id,
-            rack: value.rack,
-            room: value.room,
+            location: value.office_id,
             network_id: value.network_id,
             credential: value.credential,
         }
@@ -79,9 +77,7 @@ pub fn create_all_devices(network: IpNet, id: Uuid) -> Option<Vec<device::Device
         resp.push(device::Device {
             ip,
             description: None,
-            office_id: None,
-            rack: None,
-            room: None,
+            location: None,
             status: device::Status::default(),
             network_id: id,
             credential: None,

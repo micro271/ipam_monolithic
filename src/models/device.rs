@@ -16,9 +16,7 @@ pub struct UpdateDevice {
 pub struct Device {
     pub ip: IpAddr,
     pub description: Option<String>,
-    pub office_id: Option<Uuid>,
-    pub rack: Option<String>,
-    pub room: Option<String>,
+    pub location: Option<Uuid>,
     pub status: Status,
     pub network_id: uuid::Uuid,
     pub credential: Option<Credential>,

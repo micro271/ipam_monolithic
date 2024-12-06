@@ -2,6 +2,8 @@ use super::device::*;
 use super::{network::*, *};
 use ipnet::IpNet;
 use libipam::type_net::host_count::HostCount;
+use libipam::type_net::port::Port;
+use service::ServicesUpdate;
 use std::{
     collections::HashMap,
     {net::IpAddr, vec},
@@ -24,9 +26,7 @@ impl Table for Device {
         vec![
             "ip",
             "description",
-            "office_id",
-            "rack",
-            "room",
+            "lcoation",
             "status",
             "network_id",
             "credential",
@@ -38,7 +38,7 @@ impl Table for Device {
     }
 
     fn query_insert() -> String {
-        format!("INSERT INTO {} (ip, network_id, description, office_id, rack, room, status, credential) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)", Self::name())
+        format!("INSERT INTO {} (ip, network_id, description, location, status, credential) VALUES ($1, $2, $3, $4, $5, $6)", Self::name())
     }
 
     fn get_fields(self) -> Vec<TypeTable> {
@@ -46,9 +46,7 @@ impl Table for Device {
             self.ip.into(),
             self.network_id.into(),
             self.description.into(),
-            self.office_id.into(),
-            self.rack.into(),
-            self.room.into(),
+            self.location.into(),
             self.status.into(),
             self.credential.into(),
         ]
@@ -111,7 +109,65 @@ impl Table for office::Office {
     }
 
     fn columns() -> Vec<&'static str> {
-        todo!()
+        vec![
+            "id",
+            "description",
+            "address"
+        ]
+    }
+}
+
+impl Table for service::Services {
+    fn name() -> String {
+        String::from("services")
+    }
+
+    fn query_insert() -> String {
+        format!("INSERT INTO {} (id, name, version) VALUES ($1, $2, $3)", Self::name())
+    }
+
+    fn get_fields(self) -> Vec<TypeTable> {
+        vec![
+            self.id.into(),
+            self.name.into(),
+            self.version.into(),
+        ]
+    }
+
+    fn columns() -> Vec<&'static str> {
+        vec![
+            "id",
+            "name",
+            "version"
+        ]
+    }
+}
+
+impl Table for service::Service {
+    fn name() -> String {
+        String::from("services")
+    }
+
+    fn query_insert() -> String {
+        format!(
+            "INSERT INTO {} (port, ip, network_id, service_id, descripcion, type) VALUES ($1, $2, $3, $4, $5, $6)",
+            Self::name()
+        )
+    }
+
+    fn get_fields(self) -> Vec<TypeTable> {
+        vec![self.port.into(), self.ip.into(), self.netwok_id.into(), self.service_id.into(), self.description.into()]
+    }
+
+    fn columns() -> Vec<&'static str> {
+        vec![
+            "port",
+            "ip",
+            "network_id",
+            "service_id",
+            "description",
+            "type",
+        ]
     }
 }
 
@@ -235,6 +291,63 @@ impl<'a> Updatable<'a> for network::UpdateNetworkCount {
     }
 }
 
+impl <'a> Updatable<'a> for service::ServiceUpdate {
+    fn get_pair(self) -> Option<HashMap<&'a str, TypeTable>> {
+        let mut resp = HashMap::new();
+        if let Some(tmp) = self.port {
+            resp.insert("port", tmp.into())
+        }
+        if let Some(tmp) = self.description {
+            resp.insert("description", if tmp.is_empty() {
+                None
+            } else {
+                Some(tmp)
+            }.into())
+        }
+        if let Some(tmp) = self.ip {
+            resp.insert("port", tmp.into())
+        }
+        if let Some(tmp) = self.netwok_id {
+            resp.insert("port", tmp.into())
+        }
+        if let Some(tmp) = self.service_id {
+            resp.insert("port", if tmp.is_nil() {
+                None
+            } else {
+                Some(tmp).into()
+            })
+        }
+        if let Some(tmp) = self.r#type {
+            resp.insert("port", tmp.into())
+        }
+
+        Some(resp)
+    }
+}
+
+impl<'a> Updatable<'a> for ServicesUpdate {
+    fn get_pair(self) -> Option<HashMap<&'a str, TypeTable>> {
+        let mut resp = HashMap::new();
+        if let Some(e) = self.name {
+            resp.insert("name", if e.is_empty() {
+                None
+            } else {
+                Some(e)
+            }.into());
+        }
+
+        if let Some(e) = self.version {
+            resp.insert("version", if e.is_empty() {
+                None
+            } else {
+                Some(e)
+            }.into());
+        }
+
+        Some(resp)
+    }
+}
+
 #[derive(Debug, PartialEq)]
 pub enum TypeTable {
     String(String),
@@ -242,11 +355,18 @@ pub enum TypeTable {
     Uuid(Uuid),
     OptionString(Option<String>),
     Status(device::Status),
-    HostCount(u32),
+    U32(u32),
     Role(user::Role),
-    OptionVlan(Option<i32>),
+    OptionI32(Option<i32>),
     BytesOption(Option<Vec<u8>>),
+    U16(u16),
     Null,
+}
+
+impl From<Port> for TypeTable {
+    fn from(value: Port) -> Self {
+        Self::U16(*value)
+    }
 }
 
 impl From<Option<Credential>> for TypeTable {
@@ -257,7 +377,7 @@ impl From<Option<Credential>> for TypeTable {
 
 impl From<Option<Vlan>> for TypeTable {
     fn from(value: Option<Vlan>) -> Self {
-        Self::OptionVlan(value.map(|vlan| *vlan as i32))
+        Self::OptionI32(value.map(|vlan| *vlan as i32))
     }
 }
 
@@ -293,7 +413,7 @@ impl From<IpNet> for TypeTable {
 
 impl From<HostCount> for TypeTable {
     fn from(value: HostCount) -> Self {
-        Self::HostCount(*value)
+        Self::U32(*value)
     }
 }
 

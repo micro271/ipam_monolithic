@@ -2,6 +2,7 @@ pub mod device;
 pub mod network;
 pub mod user;
 pub mod utils;
+pub mod service;
 
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;

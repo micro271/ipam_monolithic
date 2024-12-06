@@ -2,6 +2,7 @@ pub mod auth;
 pub mod device;
 pub mod error;
 pub mod http;
+pub mod services;
 mod models_data_entry;
 pub mod network;
 mod query_params;

@@ -1,9 +1,13 @@
+use std::net::IpAddr;
+
 use crate::models::{
     device::*,
     network::{Network, Vlan},
     office::Office,
     user::*,
+    service::{Service, Services}
 };
+use libipam::type_net::port::Port;
 use sqlx::{sqlite::SqliteRow, Row};
 
 impl From<SqliteRow> for Device {
@@ -11,12 +15,10 @@ impl From<SqliteRow> for Device {
         Self {
             ip: value.get::<'_, &str, _>("ip").parse().unwrap(),
             description: value.get("description"),
-            office_id: value.get("office_id"),
-            rack: value.get("rack"),
+            location: value.get("location"),
             credential: value
                 .get::<'_, Option<Vec<u8>>, _>("credential")
                 .map(|x| bincode::deserialize::<'_, Credential>(&x).unwrap()),
-            room: value.get("room"),
             status: value.get("status"),
             network_id: value.get("network_id"),
         }
@@ -56,6 +58,29 @@ impl From<SqliteRow> for User {
             username: value.get("username"),
             password: value.get("password"),
             role: value.get("role"),
+        }
+    }
+}
+
+impl From<SqliteRow> for Service {
+    fn from(value: SqliteRow) -> Self {
+        Self {
+            port: Port::new(value.get("port")),
+            ip: IpAddr::from(value.get("ip")),
+            netwok_id: value.get("network_id"),
+            service_id: value.get("service_id"),
+            description: value.get("description"),
+            r#type: value.get("type").parse(),
+        }
+    }
+}
+
+impl From<SqliteRow> for Services {
+    fn from(value: SqliteRow) -> Self {
+        Self {
+            id: value.get("id"),
+            name: value.get("name"),
+            version: value.get("version"),
         }
     }
 }

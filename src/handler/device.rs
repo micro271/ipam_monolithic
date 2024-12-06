@@ -58,9 +58,7 @@ pub async fn create_all_devices(
                 .map(|ip| Device {
                     ip,
                     description: None,
-                    office_id: None,
-                    rack: None,
-                    room: None,
+                    location: None,
                     status: Status::default(),
                     network_id,
                     credential: None,

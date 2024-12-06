@@ -38,7 +38,6 @@ pub async fn fallback(req: Request) -> impl IntoResponse {
     Html(tera.render("fallback.html", &context).unwrap()).into_response()
 }
 
-
 pub async fn http_view_network(
     State(state): State<RepositoryType>,
     Extension(claim): Extension<Claims>,
@@ -60,7 +59,6 @@ pub async fn http_view_network(
     let tera = TEMPLATES.lock().await;
     Html(tera.render("index.html", &cont).unwrap()).into_response()
 }
-
 pub async fn http_view_devices(
     State(state): State<RepositoryType>,
     Extension(claim): Extension<Claims>,

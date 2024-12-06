@@ -12,32 +12,47 @@ CREATE TABLE IF NOT EXISTS networks (
 
 CREATE TABLE IF NOT EXISTS offices (
     id TEXT PRIMARY KEY, 
-    description TEXT,
+    rack TEXT,
     address TEXT UNIQUE
 );
 
 CREATE TABLE IF NOT EXISTS devices (
     ip TEXT NOT NULL,
     description TEXT,
-    office_id TEXT,
-    rack TEXT,
-    room TEXT,
     status TEXT NOT NULL,
+    location TEXT,
     network_id TEXT NOT NULL,
     credential BLOB,
     PRIMARY KEY (ip, network_id),
     FOREIGN KEY (network_id) REFERENCES networks(id) ON DELETE CASCADE,
-    FOREIGN KEY (office_id) REFERENCES offices(id) ON DELETE SET NULL
+    FOREIGN KEY (location) REFERENCES location(id) ON DELETE NO ACTION
 );
 
-CREATE TABLE IF NOT EXISTS services {
+CREATE TABLE IF NOT EXISTS location {
+    id TEXT,
+    type text CHECK(type IN ("Rack", "Desk", "Rack Cabinet"))
+    office_id TEXT,
+    FOREIGN KEY (office_id) REFERENCES offices(id) ON DELETE ON CASCADE,
+    PRIMARY KEY (id)
+}
+
+CREATE TABLE IF NOT EXISTS service {
     port INTEGER,
     ip TEXT,
     network_id TEXT,
+    service_id TEXT NOT NULL,
     description TEXT,
     type TEXT CHECK (type IN ('Container','Local')),
     PRIMARY KEY (port, ip, network_id),
-    FOREIGN KEY (ip, network_id) REFERENCES devices (uom network_id) ON DELETE CASCADE
+    FOREIGN KEY (service_id) REFERENCES service (id) ON DELETE NO ACTION,
+    FOREIGN KEY (ip, network_id) REFERENCES devices (ip, network_id) ON DELETE CASCADE
+}
+
+CREATE TABLE IF NO EXISTS services {
+    id TEXT,
+    name TEXT NOT NULL,
+    version TEXT,
+    PRIMARY KEY (id)
 }
 
 CREATE TABLE IF NOT EXISTS users (
