@@ -109,11 +109,7 @@ impl Table for office::Office {
     }
 
     fn columns() -> Vec<&'static str> {
-        vec![
-            "id",
-            "description",
-            "address"
-        ]
+        vec!["id", "description", "address"]
     }
 }
 
@@ -123,23 +119,18 @@ impl Table for service::Services {
     }
 
     fn query_insert() -> String {
-        format!("INSERT INTO {} (id, name, version) VALUES ($1, $2, $3)", Self::name())
+        format!(
+            "INSERT INTO {} (id, name, version) VALUES ($1, $2, $3)",
+            Self::name()
+        )
     }
 
     fn get_fields(self) -> Vec<TypeTable> {
-        vec![
-            self.id.into(),
-            self.name.into(),
-            self.version.into(),
-        ]
+        vec![self.id.into(), self.name.into(), self.version.into()]
     }
 
     fn columns() -> Vec<&'static str> {
-        vec![
-            "id",
-            "name",
-            "version"
-        ]
+        vec!["id", "name", "version"]
     }
 }
 
@@ -156,7 +147,13 @@ impl Table for service::Service {
     }
 
     fn get_fields(self) -> Vec<TypeTable> {
-        vec![self.port.into(), self.ip.into(), self.netwok_id.into(), self.service_id.into(), self.description.into()]
+        vec![
+            self.port.into(),
+            self.ip.into(),
+            self.netwok_id.into(),
+            self.service_id.into(),
+            self.description.into(),
+        ]
     }
 
     fn columns() -> Vec<&'static str> {
@@ -291,34 +288,30 @@ impl<'a> Updatable<'a> for network::UpdateNetworkCount {
     }
 }
 
-impl <'a> Updatable<'a> for service::ServiceUpdate {
+impl<'a> Updatable<'a> for service::ServiceUpdate {
     fn get_pair(self) -> Option<HashMap<&'a str, TypeTable>> {
-        let mut resp = HashMap::new();
+        let mut resp: HashMap<&str, TypeTable> = HashMap::new();
+
         if let Some(tmp) = self.port {
-            resp.insert("port", tmp.into())
+            resp.insert("port", tmp.into());
         }
         if let Some(tmp) = self.description {
-            resp.insert("description", if tmp.is_empty() {
-                None
-            } else {
-                Some(tmp)
-            }.into())
+            resp.insert(
+                "description",
+                if tmp.is_empty() { None } else { Some(tmp) }.into(),
+            );
         }
         if let Some(tmp) = self.ip {
-            resp.insert("port", tmp.into())
+            resp.insert("ip", tmp.into());
         }
         if let Some(tmp) = self.netwok_id {
-            resp.insert("port", tmp.into())
+            resp.insert("network_id", tmp.into());
         }
         if let Some(tmp) = self.service_id {
-            resp.insert("port", if tmp.is_nil() {
-                None
-            } else {
-                Some(tmp).into()
-            })
-        }
-        if let Some(tmp) = self.r#type {
-            resp.insert("port", tmp.into())
+            resp.insert(
+                "service_id",
+                if tmp.is_nil() { None } else { Some(tmp) }.into(),
+            );
         }
 
         Some(resp)
@@ -329,19 +322,11 @@ impl<'a> Updatable<'a> for ServicesUpdate {
     fn get_pair(self) -> Option<HashMap<&'a str, TypeTable>> {
         let mut resp = HashMap::new();
         if let Some(e) = self.name {
-            resp.insert("name", if e.is_empty() {
-                None
-            } else {
-                Some(e)
-            }.into());
+            resp.insert("name", if e.is_empty() { None } else { Some(e) }.into());
         }
 
         if let Some(e) = self.version {
-            resp.insert("version", if e.is_empty() {
-                None
-            } else {
-                Some(e)
-            }.into());
+            resp.insert("version", if e.is_empty() { None } else { Some(e) }.into());
         }
 
         Some(resp)
@@ -357,7 +342,7 @@ pub enum TypeTable {
     Status(device::Status),
     U32(u32),
     Role(user::Role),
-    OptionI32(Option<i32>),
+    OptionU16(Option<u16>),
     BytesOption(Option<Vec<u8>>),
     U16(u16),
     Null,
@@ -377,7 +362,7 @@ impl From<Option<Credential>> for TypeTable {
 
 impl From<Option<Vlan>> for TypeTable {
     fn from(value: Option<Vlan>) -> Self {
-        Self::OptionI32(value.map(|vlan| *vlan as i32))
+        Self::OptionU16(value.map(|vlan| *vlan))
     }
 }
 

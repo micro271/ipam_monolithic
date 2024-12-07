@@ -1,11 +1,9 @@
-use std::net::IpAddr;
-
 use crate::models::{
     device::*,
     network::{Network, Vlan},
     office::Office,
+    service::{Service, Services},
     user::*,
-    service::{Service, Services}
 };
 use libipam::type_net::port::Port;
 use sqlx::{sqlite::SqliteRow, Row};
@@ -66,11 +64,10 @@ impl From<SqliteRow> for Service {
     fn from(value: SqliteRow) -> Self {
         Self {
             port: Port::new(value.get("port")),
-            ip: IpAddr::from(value.get("ip")),
+            ip: value.get::<'_, &str, &str>("ip").parse().unwrap(),
             netwok_id: value.get("network_id"),
             service_id: value.get("service_id"),
             description: value.get("description"),
-            r#type: value.get("type").parse(),
         }
     }
 }

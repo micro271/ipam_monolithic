@@ -99,7 +99,7 @@ impl Repository for SqliteRepository {
                     tmp = match i {
                         TypeTable::String(s) => tmp.bind(s),
                         TypeTable::OptionString(opt) => tmp.bind(opt),
-                        TypeTable::OptionI32(e) => tmp.bind(e),
+                        TypeTable::OptionU16(e) => tmp.bind(e),
                         TypeTable::Status(status) => tmp.bind(status),
                         TypeTable::U32(i) => tmp.bind(i),
                         TypeTable::Uuid(e) => tmp.bind(e),
@@ -107,7 +107,7 @@ impl Repository for SqliteRepository {
                         TypeTable::OptionUuid(e) => tmp.bind(e),
                         TypeTable::BytesOption(e) => tmp.bind(e),
                         TypeTable::Null => tmp,
-                        TypeTable::U16(e) =>  tmp.bind(e),
+                        TypeTable::U16(e) => tmp.bind(e),
                     };
                 }
 
@@ -175,7 +175,7 @@ impl Repository for SqliteRepository {
                     for i in 1..pos {
                         resp = match data_pos.get(&i).unwrap() {
                             TypeTable::OptionUuid(e) => resp.bind(e),
-                            TypeTable::OptionI32(e) => resp.bind(e),
+                            TypeTable::OptionU16(e) => resp.bind(e),
                             TypeTable::Uuid(e) => resp.bind(e),
                             TypeTable::String(s) => resp.bind(s),
                             TypeTable::OptionString(opt) => resp.bind(opt),
@@ -276,7 +276,7 @@ impl Repository for SqliteRepository {
                         TypeTable::Uuid(e) => sql.bind(e),
                         TypeTable::Role(value) => sql.bind(value),
                         TypeTable::OptionUuid(e) => sql.bind(e),
-                        TypeTable::OptionI32(e) => sql.bind(e),
+                        TypeTable::OptionU16(e) => sql.bind(e),
                         TypeTable::BytesOption(e) => sql.bind(e),
                         TypeTable::U32(e) => sql.bind(e),
                         TypeTable::Null => sql,
@@ -339,7 +339,7 @@ impl Repository for SqliteRepository {
                             TypeTable::Status(status) => ex.bind(status),
                             TypeTable::BytesOption(e) => ex.bind(e),
                             TypeTable::Role(role) => ex.bind(role),
-                            TypeTable::OptionI32(e) => ex.bind(e),
+                            TypeTable::OptionU16(e) => ex.bind(e),
                             TypeTable::U32(i) => ex.bind(i),
                             TypeTable::Null => ex,
                             TypeTable::U16(e) => ex.bind(e),

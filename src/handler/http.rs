@@ -120,3 +120,9 @@ pub async fn offices(
     let tera = TEMPLATES.lock().await;
     Html(tera.render("index.html", &cont).unwrap()).into_response()
 }
+
+pub(super) mod filter {
+    pub fn truncate_with_ellipsis() {
+        todo!()
+    }
+}

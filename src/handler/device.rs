@@ -1,10 +1,9 @@
 use super::*;
 use crate::models::{device::*, network::*};
 use axum::http::Uri;
-use libipam::{
-    ipam_services::{self, Ping},
-    response_error::{Builder, ResponseError},
-};
+use libipam::ipam_services::{self, Ping};
+
+use super::{response_error::Builder, ResponseError};
 
 use std::{collections::HashSet, net::IpAddr};
 
@@ -154,7 +153,10 @@ pub async fn update(
             }
         } else {
             return Err(ResponseError::builder()
-                .detail("The data entry (ip or network) is the same as the data in the database".to_string())
+                .detail(
+                    "The data entry (ip or network) is the same as the data in the database"
+                        .to_string(),
+                )
                 .title("Nothing happend".to_string())
                 .status(StatusCode::BAD_REQUEST)
                 .build());

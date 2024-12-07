@@ -42,7 +42,6 @@ CREATE TABLE IF NOT EXISTS service {
     network_id TEXT,
     service_id TEXT NOT NULL,
     description TEXT,
-    type TEXT CHECK (type IN ('Container','Local')),
     PRIMARY KEY (port, ip, network_id),
     FOREIGN KEY (service_id) REFERENCES service (id) ON DELETE NO ACTION,
     FOREIGN KEY (ip, network_id) REFERENCES devices (ip, network_id) ON DELETE CASCADE

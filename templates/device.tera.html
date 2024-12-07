@@ -88,10 +88,10 @@
             <div data-bs-toggle="popover" data-bs-title="<p class='fw-bold text-center'>{{device.ip}}</p>"
                 data-bs-content="
                         <div class='lh-sm'>
+                            {{set location = device.location | default(value='empty')}}
                             <p><span class='font-monospace'>Status:</span> <span id='data_status' class='fw-bold {% if device.status == 'Online' %}text-online{% elif device.status == 'Offline' %}text-danger{% endif %}' id='status'>{{device.status}}</span></p>
                             <p><span class='font-monospace'>Description:</span> <span class='fw-bold' id='description'>{{device.description | default(value='empty')}}</span></p>
-                            <p><span class='font-monospace'>Rack:</span> <span class='fw-bold' id='rack'>{{device.rack | default(value='empty')}}</span></p>
-                            <p><span class='font-monospace'>Room:</span> <span class='fw-bold' id='room'>{{device.room | default(value='empty')}}</span></p>
+                            <p><span class='font-monospace'>Location:</span> <span class='fw-bold' id='rack' data-toggle='tooltip' title='{{location}}'>{% if location == 'empty' %}{{location}}{% else %} {{location | truncate_with_ellipsis(3)}} {% endif %}</span></p>
                             <p><span class='font-monospace'>Username:</span> {% set user = device.credential.username | default(value='Unknown') %} <span class='fw-bold' id='username'>{{user}}</span></p>
                             <p><span class='font-monospace'>Password:</span> {% set pass = device.credential.password | default(value='Unknown') %}<span class='fw-bold' id='password'>{{pass}}</span></p>
                             {% if role == 'Admin' %}

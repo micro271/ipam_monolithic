@@ -6,10 +6,7 @@ use axum::{
     middleware::Next,
     response::{Redirect, Response},
 };
-use libipam::{
-    authentication::{self, create_token, encrypt, verify_passwd},
-    response_error::ResponseError,
-};
+use libipam::authentication::{self, create_token, encrypt, verify_passwd};
 
 #[axum::debug_handler]
 pub async fn create(

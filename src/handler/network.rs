@@ -2,12 +2,9 @@ use super::*;
 use crate::models::{device::Device, network::*};
 use axum::http::Uri;
 use ipnet::IpNet;
-use libipam::{
-    ipam_services::subnetting,
-    response_error::{Builder, ResponseError},
-    type_net::host_count::HostCount,
-};
+use libipam::{ipam_services::subnetting, type_net::host_count::HostCount};
 use query_params::ParamSubnetting;
+use response_error::Builder;
 
 pub async fn create(
     State(state): State<RepositoryType>,
@@ -15,7 +12,6 @@ pub async fn create(
     uri: Uri,
     Json(netw): Json<models_data_entry::Network>,
 ) -> Result<impl IntoResponse, ResponseError> {
-
     if claim.role != Role::Admin {
         return Err(ResponseError::builder()
             .status(StatusCode::UNAUTHORIZED)
