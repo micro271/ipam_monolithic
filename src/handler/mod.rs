@@ -16,7 +16,7 @@ use crate::models::{user::Role, *};
 use crate::services::Claims;
 use axum::{
     extract::{Extension, Json, Path, Query, State},
-    http::StatusCode,
+    http::{StatusCode, Uri},
     response::IntoResponse,
 };
 use libipam::response_error::{self, ResponseError};
