@@ -54,13 +54,13 @@ const reserve_ip = (event) => {
         const room = body.querySelector("#room");
         const user = body.querySelector("#username");
         const pass = body.querySelector("#password");
+        const location = body.querySelector("#location");
 
-        const input_address = modal.querySelector("[name='address']")
-        const input_description = modal.querySelector("[name='description']")
-        const input_rack = modal.querySelector("[name='rack']")
-        const input_room = modal.querySelector("[name='room']")
-        const input_user = modal.querySelector("[name='username']")
-        const input_pass = modal.querySelector("[name='password']")
+        const input_address = modal.querySelector("[name='address']");
+        const input_description = modal.querySelector("[name='description']");
+        const input_user = modal.querySelector("[name='username']");
+        const input_location = modal.querySelector("[name='location']");
+        const input_pass = modal.querySelector("[name='password']");
         const checkbox = modal.querySelector("#checkbox_to_change_address");
 
         checkbox.addEventListener('change', () => {
@@ -73,10 +73,9 @@ const reserve_ip = (event) => {
 
         input_address.value = ip;
         input_description.value = description.textContent;
-        input_rack.value = rack.textContent;
-        input_room.value = room.textContent;
         input_user.value = user.textContent;
         input_pass.value = pass.textContent;
+        input_location.value = location.textContent;
 
         pop_over.hide();
         new bootstrap.Modal(modal).show();
@@ -88,12 +87,8 @@ const reserve_ip = (event) => {
                 send.description = input_description.value;
             }
 
-            if (rack.textContent != input_rack.value) {
-                send.rack = input_rack.value;
-            }
-
-            if (room.textContent != input_room.value) {
-                send.room = input_room.value;
+            if (location.textContent != input_location.value) {
+                send.rack = input_location.value;
             }
 
             if (pass.textContent != input_pass.value || user.textContent != input_user.value) {
@@ -110,7 +105,7 @@ const reserve_ip = (event) => {
             if (description.textContent != input_description.value) {
                 send.description = input_description.value;
             }
-            console.log(send);
+            
             if (Object.keys(send).length > 0) {
                 const network_id = document.getElementById("network_id").textContent;
 
@@ -122,7 +117,7 @@ const reserve_ip = (event) => {
 
                 if (resp.ok) {
                     bootstrap.Modal.getInstance(modal).hide();
-                    location.reload(true);
+                    window.location.reload(true);
                 }
             }
         }
@@ -210,12 +205,12 @@ if (button_create_missing) {
 
         const endpoint = document.getElementById("network_id").innerHTML;
 
-        const resp = await fetch(`/api/v1/device/${endpoint}`,{
+        const create_all_devices = await fetch(`/api/v1/device/${endpoint}`,{
             headers: {"Content-type": "application/json"},
             method: 'POST',
         });
         
-        if (resp.ok) {
+        if (create_all_devices.ok) {
             location.reload(true)
         }
     })

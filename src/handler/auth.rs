@@ -2,7 +2,6 @@ use super::*;
 use crate::services::Claims;
 use axum::{
     extract::Request,
-    http::Uri,
     middleware::Next,
     response::{Redirect, Response},
 };

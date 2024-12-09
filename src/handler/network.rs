@@ -311,18 +311,16 @@ pub async fn clean(
     let state = state.lock().await;
     let mut count = 0;
 
-    if let QueryResult::Delete(e) = state
+    if let Ok(QueryResult::Delete(e)) = state
         .delete::<Network>(Some(HashMap::from([("father", id.into())])))
         .await
-        .map_err(|x| Into::<Builder>::into(ResponseError::from(x)).instance(uri.to_string()))?
     {
         count += e;
     }
 
-    if let QueryResult::Delete(e) = state
+    if let Ok(QueryResult::Delete(e)) = state
         .delete::<Device>(Some(HashMap::from([("network_id", id.into())])))
         .await
-        .map_err(|x| Into::<Builder>::into(ResponseError::from(x)).instance(uri.to_string()))?
     {
         count += e;
     }

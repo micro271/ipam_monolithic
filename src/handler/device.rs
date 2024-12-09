@@ -1,9 +1,8 @@
 use super::*;
+use super::response_error::Builder;
 use crate::models::{device::*, network::*};
-use axum::http::Uri;
 use libipam::ipam_services::{self, Ping};
-
-use super::{response_error::Builder, ResponseError};
+use query_params::{ParamDevice, ParamDeviceGet};
 
 use std::{collections::HashSet, net::IpAddr};
 
@@ -81,13 +80,18 @@ pub async fn create_all_devices(
     }
 }
 
-pub async fn get_all(
+pub async fn get(
     State(state): State<RepositoryType>,
     uri: Uri,
-    Path(network_id): Path<Uuid>,
+    Query(ParamDeviceGet { ip, network_id }): Query<ParamDeviceGet>,
 ) -> Result<QueryResult<Device>, ResponseError> {
     let state = state.lock().await;
-    let condition = HashMap::from([("network_id", network_id.into())]);
+    let mut condition = HashMap::from([("network_id", network_id.into())]);
+
+    if let Some(ip) = ip {
+        condition.insert("ip", ip.into());
+    }
+
     let mut devices = state.get::<Device>(Some(condition)).await.map_err(|x| {
         let tmp: Builder = ResponseError::from(x).into();
         tmp.instance(uri.to_string()).build()
@@ -175,23 +179,23 @@ pub async fn update(
         .map_err(|x| Into::<Builder>::into(ResponseError::from(x)).instance(uri.to_string()))?)
 }
 
-pub async fn get_one(
-    State(state): State<RepositoryType>,
-    Query(query_params::ParamDevice { ip, network_id }): Query<query_params::ParamDevice>,
-) -> Result<impl IntoResponse, ResponseError> {
-    let state = state.lock().await;
+// pub async fn get_one(
+//     State(state): State<RepositoryType>,
+//     Query(query_params::ParamDevice { ip, network_id }): Query<query_params::ParamDevice>,
+// ) -> Result<impl IntoResponse, ResponseError> {
+//     let state = state.lock().await;
 
-    let device = state
-        .get::<Device>(Some(HashMap::from([
-            ("ip", ip.into()),
-            ("network_id", network_id.into()),
-        ])))
-        .await?;
+//     let device = state
+//         .get::<Device>(Some(HashMap::from([
+//             ("ip", ip.into()),
+//             ("network_id", network_id.into()),
+//         ])))
+//         .await?;
 
-    Ok(Json(json!({
-        "device": device.first()
-    })))
-}
+//     Ok(Json(json!({
+//         "device": device.first()
+//     })))
+// }
 
 pub async fn delete(
     State(state): State<RepositoryType>,

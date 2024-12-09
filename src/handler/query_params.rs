@@ -1,7 +1,7 @@
 use super::Uuid;
+use libipam::type_net::port::Port;
 use serde::Deserialize;
 use std::net::IpAddr;
-use libipam::type_net::port::Port;
 
 #[derive(Deserialize)]
 pub struct ParamDevice {
@@ -26,5 +26,11 @@ pub struct ParamPKService {
 pub struct ParamPKServiceGet {
     pub port: Option<Port>,
     pub ip: IpAddr,
+    pub network_id: Uuid,
+}
+
+#[derive(Deserialize)]
+pub struct ParamDeviceGet {
+    pub ip: Option<IpAddr>,
     pub network_id: Uuid,
 }

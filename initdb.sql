@@ -28,15 +28,15 @@ CREATE TABLE IF NOT EXISTS devices (
     FOREIGN KEY (location) REFERENCES location(id) ON DELETE NO ACTION
 );
 
-CREATE TABLE IF NOT EXISTS location {
+CREATE TABLE IF NOT EXISTS location (
     id TEXT,
-    type text CHECK(type IN ("Rack", "Desk", "Rack Cabinet"))
+    type text CHECK(type IN ("Rack", "Desk", "Rack Cabinet")),
     office_id TEXT,
-    FOREIGN KEY (office_id) REFERENCES offices(id) ON DELETE ON CASCADE,
+    FOREIGN KEY (office_id) REFERENCES offices(id) ON DELETE CASCADE,
     PRIMARY KEY (id)
-}
+);
 
-CREATE TABLE IF NOT EXISTS service {
+CREATE TABLE IF NOT EXISTS service (
     port INTEGER,
     ip TEXT,
     network_id TEXT,
@@ -45,14 +45,14 @@ CREATE TABLE IF NOT EXISTS service {
     PRIMARY KEY (port, ip, network_id),
     FOREIGN KEY (service_id) REFERENCES service (id) ON DELETE NO ACTION,
     FOREIGN KEY (ip, network_id) REFERENCES devices (ip, network_id) ON DELETE CASCADE
-}
+);
 
-CREATE TABLE IF NO EXISTS services {
+CREATE TABLE IF NOT EXISTS services (
     id TEXT,
     name TEXT NOT NULL,
     version TEXT,
     PRIMARY KEY (id)
-}
+);
 
 CREATE TABLE IF NOT EXISTS users (
     id TEXT PRIMARY KEY,

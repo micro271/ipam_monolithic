@@ -88,10 +88,10 @@
             <div data-bs-toggle="popover" data-bs-title="<p class='fw-bold text-center'>{{device.ip}}</p>"
                 data-bs-content="
                         <div class='lh-sm'>
-                            {{set location = device.location | default(value='empty')}}
+                            {% set location = device.location | default(value='empty') %}
                             <p><span class='font-monospace'>Status:</span> <span id='data_status' class='fw-bold {% if device.status == 'Online' %}text-online{% elif device.status == 'Offline' %}text-danger{% endif %}' id='status'>{{device.status}}</span></p>
                             <p><span class='font-monospace'>Description:</span> <span class='fw-bold' id='description'>{{device.description | default(value='empty')}}</span></p>
-                            <p><span class='font-monospace'>Location:</span> <span class='fw-bold' id='rack' data-toggle='tooltip' title='{{location}}'>{% if location == 'empty' %}{{location}}{% else %} {{location | truncate_with_ellipsis(3)}} {% endif %}</span></p>
+                            <p><span class='font-monospace'>Location:</span> <span class='fw-bold' id='location' data-toggle='tooltip' title='{{location}}'>{% if location == 'empty' %}{{location}}{% else %}{{location}}{% endif %}</span></p>
                             <p><span class='font-monospace'>Username:</span> {% set user = device.credential.username | default(value='Unknown') %} <span class='fw-bold' id='username'>{{user}}</span></p>
                             <p><span class='font-monospace'>Password:</span> {% set pass = device.credential.password | default(value='Unknown') %}<span class='fw-bold' id='password'>{{pass}}</span></p>
                             {% if role == 'Admin' %}
@@ -148,15 +148,9 @@
                         </div>
 
                         <div class="input-group mb-3">
-                            <span class="input-group-text" id="device_rack">rack</span>
-                            <input name="rack" type="text" class="form-control"
-                                aria-describedby="device_rack">
-                        </div>
-
-                        <div class="input-group mb-3">
-                            <span class="input-group-text" id="device_room">room</span>
-                            <input name="room" type="text" class="form-control"
-                                aria-describedby="device_room">
+                            <span class="input-group-text" id="device_location">location</span>
+                            <input name="location" type="text" class="form-control"
+                                aria-describedby="device_location">
                         </div>
 
                         <div class="input-group mb-3">

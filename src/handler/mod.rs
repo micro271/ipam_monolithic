@@ -20,7 +20,6 @@ use axum::{
     response::IntoResponse,
 };
 use libipam::response_error::{self, ResponseError};
-use serde_json::json;
 use std::{collections::HashMap, sync::Arc};
 use tokio::sync::Mutex;
 use uuid::Uuid;
