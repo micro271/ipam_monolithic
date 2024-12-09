@@ -417,6 +417,7 @@ const event_clean = async (btn) => {
     const resp = await fetch(url, {
         method: 'DELETE'
     });
+    console.log(await resp.json())
 }
 
 const add_row_table_main = (rows) => {
@@ -589,7 +590,9 @@ const create_table_main_if_not_exists = () => {
     }
 }
 
-[... table_main_pointer.querySelectorAll("[data-type-button='clean']")].forEach(btn => {
-    btn.addEventListener("click", event_clean);
-});
+if (table_main_pointer) {
+    [... table_main_pointer.querySelectorAll("[data-type-button='clean']")].forEach(btn => {
+        btn.addEventListener("click", event_clean);
+    });
+}
 

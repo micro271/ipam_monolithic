@@ -5,9 +5,7 @@ use std::net::IpAddr;
 pub struct UpdateDevice {
     pub ip: Option<IpAddr>,
     pub description: Option<String>,
-    pub office_id: Option<Uuid>,
-    pub rack: Option<String>,
-    pub room: Option<String>,
+    pub location: Option<String>,
     pub network_id: Option<Uuid>,
     pub credential: Option<Credential>,
 }

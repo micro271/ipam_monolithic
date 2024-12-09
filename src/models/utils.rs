@@ -26,7 +26,7 @@ impl Table for Device {
         vec![
             "ip",
             "description",
-            "lcoation",
+            "location",
             "status",
             "network_id",
             "credential",
@@ -141,7 +141,7 @@ impl Table for service::Service {
 
     fn query_insert() -> String {
         format!(
-            "INSERT INTO {} (port, ip, network_id, service_id, descripcion, type) VALUES ($1, $2, $3, $4, $5, $6)",
+            "INSERT INTO {} (port, ip, network_id, service_id, descripcion) VALUES ($1, $2, $3, $4, $5)",
             Self::name()
         )
     }
@@ -163,7 +163,6 @@ impl Table for service::Service {
             "network_id",
             "service_id",
             "description",
-            "type",
         ]
     }
 }
@@ -177,42 +176,28 @@ impl<'a> Updatable<'a> for UpdateDevice {
         }
 
         if let Some(tmp) = self.description {
-            let data = if tmp.is_empty() { None } else { Some(tmp) };
-
-            pair.insert("description", data.into());
+            pair.insert("description", if tmp.is_empty() { 
+                None 
+            } else { 
+                Some(tmp) 
+            }.into());
         }
 
         if let Some(tmp) = self.network_id {
             pair.insert("network_id", tmp.into());
         }
 
-        if let Some(tmp) = self.office_id {
-            let tmp = if tmp == uuid::Uuid::nil() {
-                None
-            } else {
-                Some(tmp)
-            };
-            pair.insert("office_id", tmp.into());
-        }
-
-        if let Some(tmp) = self.rack {
+        if let Some(tmp) = self.location {
             let tmp = if tmp.is_empty() { None } else { Some(tmp) };
             pair.insert("rack", tmp.into());
         }
 
-        if let Some(tmp) = self.room {
-            let tmp = if tmp.is_empty() { None } else { Some(tmp) };
-            pair.insert("room", tmp.into());
-        }
-
         if let Some(cred) = self.credential {
-            let tmp = if cred.password.is_empty() && cred.username.is_empty() {
+            pair.insert("credential", if cred.password.is_empty() && cred.username.is_empty() {
                 None
             } else {
                 Some(cred)
-            };
-
-            pair.insert("credential", tmp.into());
+            }.into());
         }
 
         if !pair.is_empty() {
@@ -234,8 +219,11 @@ impl<'a> Updatable<'a> for UpdateNetwork {
         let mut pair = HashMap::new();
 
         if let Some(tmp) = self.description {
-            let tmp = if tmp.is_empty() { None } else { Some(tmp) };
-            pair.insert("description", tmp.into());
+            pair.insert("description", if tmp.is_empty() { 
+                None 
+            } else { 
+                Some(tmp) 
+            }.into());
         }
 
         if let Some(tmp) = self.network {

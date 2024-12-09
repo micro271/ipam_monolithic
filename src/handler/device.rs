@@ -105,7 +105,7 @@ pub async fn update(
     State(state): State<RepositoryType>,
     Extension(claim): Extension<Claims>,
     uri: Uri,
-    Query(query_params::ParamDevice { ip, network_id }): Query<query_params::ParamDevice>,
+    Query(ParamDevice { ip, network_id }): Query<ParamDevice>,
     Json(device): Json<UpdateDevice>,
 ) -> Result<QueryResult<Device>, ResponseError> {
     if claim.role != Role::Admin {
@@ -181,7 +181,7 @@ pub async fn update(
 
 // pub async fn get_one(
 //     State(state): State<RepositoryType>,
-//     Query(query_params::ParamDevice { ip, network_id }): Query<query_params::ParamDevice>,
+//     Query(ParamDevice { ip, network_id }): Query<ParamDevice>,
 // ) -> Result<impl IntoResponse, ResponseError> {
 //     let state = state.lock().await;
 
@@ -222,7 +222,7 @@ pub async fn ping(
     State(state): State<RepositoryType>,
     uri: Uri,
     Extension(_claims): Extension<Claims>,
-    Query(query_params::ParamDevice { ip, network_id }): Query<query_params::ParamDevice>,
+    Query(ParamDevice { ip, network_id }): Query<ParamDevice>,
 ) -> Result<Ping, ResponseError> {
     let state = state.lock().await;
 
@@ -307,7 +307,7 @@ pub async fn ping(
 pub async fn reserve(
     State(state): State<RepositoryType>,
     uri: Uri,
-    Query(query_params::ParamDevice { ip, network_id }): Query<query_params::ParamDevice>,
+    Query(ParamDevice { ip, network_id }): Query<ParamDevice>,
 ) -> Result<QueryResult<Device>, ResponseError> {
     let state = state.lock().await;
 
