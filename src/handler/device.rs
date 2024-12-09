@@ -258,20 +258,12 @@ pub async fn ping(
                 })?
                 .remove(0);
 
-            if network.used.add(1_u8).is_err() || network.free.sub(1_u8).is_err() {
-                return Err(ResponseError::builder()
-                    .detail(format!(
-                        "We've been able to modified the free and used counter in network {}",
-                        network.network
-                    ))
-                    .title("Fail to modifie host counter".to_string())
-                    .status(StatusCode::NOT_MODIFIED)
-                    .build());
-            }
+            let _ = network.used.add(1).is_err();
+            let _ = network.free.sub(1).is_err();
 
             let updater = UpdateNetworkCount {
-                used: Some(network.used.clone()),
-                free: Some(network.free.clone()),
+                used: Some(network.used),
+                free: Some(network.free),
                 available: None,
             };
             if state
@@ -334,18 +326,8 @@ pub async fn reserve(
     let mut id_to_update = Some(network.id);
 
     while let Some(id) = id_to_update {
-        let result_used = network.used.add(1_u32);
-        let result_free = network.free.sub(1_u32);
-        if result_free.is_err() && result_used.is_err() {
-            return Err(ResponseError::builder()
-                .title("Errir to update".into())
-                .detail(format!(
-                    "Error to update HostCounter in the network {}",
-                    network.network
-                ))
-                .instance(uri.to_string())
-                .build());
-        }
+        let _ = network.used.add(1);
+        let _ = network.free.sub(1);
 
         let updater = UpdateNetworkCount {
             used: Some(network.used.clone()),
