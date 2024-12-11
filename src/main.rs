@@ -11,7 +11,7 @@ use axum::{
     serve, Router,
 };
 use database::SqliteRepository;
-use handler::*;
+use handler::{services as svcs, *};
 use std::{env, sync::Arc};
 use tokio::sync::Mutex;
 use tower_http::{compression::CompressionLayer, services::ServeDir, trace::TraceLayer};
@@ -66,7 +66,22 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let user = Router::new().route("/", post(auth::create));
 
+    let service = Router::new().route(
+        "/",
+        post(service::create)
+            .patch(service::update)
+            .delete(service::delete)
+            .get(service::get),
+    );
+
+    let services = Router::new().route("/", post(svcs::create)).route(
+        "/:id",
+        patch(svcs::update).get(svcs::get).delete(svcs::delete),
+    );
+
     let api = Router::new()
+        .nest("/service", service)
+        .nest("/services", services)
         .nest("/network", network)
         .nest("/device", device)
         .nest("/user", user);

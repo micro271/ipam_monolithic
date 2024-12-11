@@ -157,13 +157,7 @@ impl Table for service::Service {
     }
 
     fn columns() -> Vec<&'static str> {
-        vec![
-            "port",
-            "ip",
-            "network_id",
-            "service_id",
-            "description",
-        ]
+        vec!["port", "ip", "network_id", "service_id", "description"]
     }
 }
 
@@ -176,11 +170,10 @@ impl<'a> Updatable<'a> for UpdateDevice {
         }
 
         if let Some(tmp) = self.description {
-            pair.insert("description", if tmp.is_empty() { 
-                None 
-            } else { 
-                Some(tmp) 
-            }.into());
+            pair.insert(
+                "description",
+                if tmp.is_empty() { None } else { Some(tmp) }.into(),
+            );
         }
 
         if let Some(tmp) = self.network_id {
@@ -193,11 +186,15 @@ impl<'a> Updatable<'a> for UpdateDevice {
         }
 
         if let Some(cred) = self.credential {
-            pair.insert("credential", if cred.password.is_empty() && cred.username.is_empty() {
-                None
-            } else {
-                Some(cred)
-            }.into());
+            pair.insert(
+                "credential",
+                if cred.password.is_empty() && cred.username.is_empty() {
+                    None
+                } else {
+                    Some(cred)
+                }
+                .into(),
+            );
         }
 
         if !pair.is_empty() {
@@ -219,11 +216,10 @@ impl<'a> Updatable<'a> for UpdateNetwork {
         let mut pair = HashMap::new();
 
         if let Some(tmp) = self.description {
-            pair.insert("description", if tmp.is_empty() { 
-                None 
-            } else { 
-                Some(tmp) 
-            }.into());
+            pair.insert(
+                "description",
+                if tmp.is_empty() { None } else { Some(tmp) }.into(),
+            );
         }
 
         if let Some(tmp) = self.network {

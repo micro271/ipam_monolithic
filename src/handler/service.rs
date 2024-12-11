@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use super::{
     query_params::{ParamPKService, ParamPKServiceGet},
     utils::TypeTable,
-    RepositoryType, ResponseError,
+    RepositoryType, ResponseError, Uri,
 };
 use crate::{
     database::repository::{QueryResult, Repository},
@@ -11,9 +11,9 @@ use crate::{
 };
 use axum::{
     extract::{Query, State},
-    http::{StatusCode, Uri},
     Json,
 };
+use libipam::response_error::Builder;
 
 pub async fn create(
     State(state): State<RepositoryType>,
@@ -45,7 +45,8 @@ pub async fn update(
                 ("network_id", network_id.into()),
             ])),
         )
-        .await?)
+        .await
+        .map_err(|x| Into::<Builder>::into(ResponseError::from(x)).instance(uri.to_string()))?)
 }
 
 pub async fn delete(

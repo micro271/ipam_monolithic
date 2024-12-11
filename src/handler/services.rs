@@ -1,3 +1,5 @@
+use response_error::Builder;
+
 use super::*;
 use crate::models::service::{Services, ServicesUpdate};
 
@@ -13,14 +15,15 @@ pub async fn create(
 pub async fn update(
     State(state): State<RepositoryType>,
     uri: Uri,
-    Json(updater): Json<ServicesUpdate>,
     Path(id): Path<uuid::Uuid>,
+    Json(updater): Json<ServicesUpdate>,
 ) -> Result<QueryResult<Services>, ResponseError> {
     let state = state.lock().await;
 
     Ok(state
         .update(updater, Some(HashMap::from([("id", id.into())])))
-        .await?)
+        .await
+        .map_err(|x| Into::<Builder>::into(ResponseError::from(x)).instance(uri.to_string()))?)
 }
 
 pub async fn delete(
@@ -32,21 +35,20 @@ pub async fn delete(
 
     Ok(state
         .delete(Some(HashMap::from([("id", id.into())])))
-        .await?)
+        .await
+        .map_err(|x| Into::<Builder>::into(ResponseError::from(x)).instance(uri.to_string()))?)
 }
 
 pub async fn get(
     State(state): State<RepositoryType>,
+    uri: Uri,
     Path(id): Path<Option<uuid::Uuid>>,
 ) -> Result<QueryResult<Services>, ResponseError> {
     let state = state.lock().await;
 
     Ok(state
-        .get(if let Some(id) = id {
-            Some(HashMap::from([("id", id.into())]))
-        } else {
-            None
-        })
-        .await?
+        .get(id.map(|x| HashMap::from([("id", x.into())])))
+        .await
+        .map_err(|x| Into::<Builder>::into(ResponseError::from(x)).instance(uri.to_string()))?
         .into())
 }

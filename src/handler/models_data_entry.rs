@@ -45,9 +45,7 @@ impl From<Network> for network::Network {
 pub struct Device {
     pub ip: IpAddr,
     pub description: Option<String>,
-    pub office_id: Option<Uuid>,
-    pub rack: Option<String>,
-    pub room: Option<String>,
+    pub location: Option<Uuid>,
     pub status: Option<device::Status>,
     pub network_id: uuid::Uuid,
     pub credential: Option<device::Credential>,
@@ -59,7 +57,7 @@ impl From<Device> for device::Device {
             status: device::Status::default(),
             ip: value.ip,
             description: value.description,
-            location: value.office_id,
+            location: value.location,
             network_id: value.network_id,
             credential: value.credential,
         }
