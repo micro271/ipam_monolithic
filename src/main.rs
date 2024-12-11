@@ -94,6 +94,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             "/favicon.ico",
             get(|| async { Redirect::to("/static/favicon.ico").into_response() }),
         )
+        .route("/services", get(http::services))
+        .route("/service", get(http::service))
         .route("/:network_id", get(http::http_view_devices));
 
     let app = Router::new()

@@ -1,6 +1,6 @@
-use super::{office::Office, utils::TypeTable};
+use super::{office::Office, query_params::ParamPKServiceGet, utils::TypeTable};
 use axum::{
-    extract::{Path, Request, State},
+    extract::{Path, Query, Request, State},
     response::{Html, IntoResponse},
     Extension,
 };
@@ -12,7 +12,12 @@ use uuid::Uuid;
 
 use crate::{
     database::repository::Repository,
-    models::{device::Device, network::Network, user::Role},
+    models::{
+        device::Device,
+        network::Network,
+        service::{Service, Services},
+        user::Role,
+    },
     services::Claims,
 };
 
@@ -119,6 +124,53 @@ pub async fn offices(
     cont.insert("offices", &ofs);
     let tera = TEMPLATES.lock().await;
     Html(tera.render("index.html", &cont).unwrap()).into_response()
+}
+
+pub async fn services(
+    State(state): State<RepositoryType>,
+    Extension(claim): Extension<Claims>,
+) -> impl IntoResponse {
+    let state = state.lock().await;
+    let svcs = state.get::<Services>(None).await.unwrap_or_default();
+    let mut ctx = Context::new();
+    ctx.insert("services", &svcs);
+    ctx.insert("user_id", &claim.sub);
+    ctx.insert("role", &claim.role);
+    ctx.insert("username", &claim.username);
+
+    let tera = TEMPLATES.lock().await;
+    Html(tera.render("index.html", &ctx).unwrap()).into_response()
+}
+
+pub async fn service(
+    State(state): State<RepositoryType>,
+    Extension(claim): Extension<Claims>,
+    Query(ParamPKServiceGet {
+        port,
+        ip,
+        network_id,
+    }): Query<ParamPKServiceGet>,
+) -> impl IntoResponse {
+    let state = state.lock().await;
+    let mut ctx = Context::new();
+    let mut condition: HashMap<_, TypeTable> =
+        HashMap::from([("ip", ip.into()), ("network_id", network_id.into())]);
+    if let Some(port) = port {
+        condition.insert("port", port.into());
+    }
+    let service = state
+        .get::<Service>(Some(condition))
+        .await
+        .unwrap_or_default();
+
+    ctx.insert("services", &service);
+    ctx.insert("user_id", &claim.sub);
+    ctx.insert("role", &claim.role);
+    ctx.insert("username", &claim.username);
+
+    let tera = TEMPLATES.lock().await;
+
+    Html(tera.render("index.html", &ctx).unwrap()).into_response()
 }
 
 pub(super) mod filter {

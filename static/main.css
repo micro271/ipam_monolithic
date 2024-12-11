@@ -42,7 +42,7 @@
 }
 
 
-.grid-devices a:hover {
+.grid-devices a[data-ipam-ping]:hover {
     animation: spin 0.5s linear;
 }
 
