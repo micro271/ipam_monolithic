@@ -12,7 +12,6 @@ CREATE TABLE IF NOT EXISTS networks (
 
 CREATE TABLE IF NOT EXISTS offices (
     id TEXT PRIMARY KEY, 
-    rack TEXT,
     address TEXT UNIQUE
 );
 
@@ -31,9 +30,10 @@ CREATE TABLE IF NOT EXISTS devices (
 CREATE TABLE IF NOT EXISTS location (
     id TEXT,
     type text CHECK(type IN ("Rack", "Desk", "Rack Cabinet")),
+    label TEXT,
     office_id TEXT,
     FOREIGN KEY (office_id) REFERENCES offices(id) ON DELETE CASCADE,
-    PRIMARY KEY (id)
+    PRIMARY KEY (id, label)
 );
 
 CREATE TABLE IF NOT EXISTS service (

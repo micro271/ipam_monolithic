@@ -18,7 +18,7 @@ const reserve_ip = (event) => {
 }
 
 [...popoverTriggerList].map(popOver => popOver.addEventListener('shown.bs.popover', () => {
-    const pop_over = bootstrap.Popover.getInstance(popOver)
+    const pop_over = bootstrap.Popover.getInstance(popOver);
     const id_father = pop_over.tip.id;
     const father = document.getElementById(id_father);
     const body = father.querySelector(".popover-body");
@@ -50,33 +50,48 @@ const reserve_ip = (event) => {
         const modal = document.querySelector(".modal");
         
         const description = body.querySelector("#description");
-        const rack = body.querySelector("#rack");
-        const room = body.querySelector("#room");
         const user = body.querySelector("#username");
         const pass = body.querySelector("#password");
         const location = body.querySelector("#location");
-
         const input_address = modal.querySelector("[name='address']");
         const input_description = modal.querySelector("[name='description']");
         const input_user = modal.querySelector("[name='username']");
         const input_location = modal.querySelector("[name='location']");
         const input_pass = modal.querySelector("[name='password']");
-        const checkbox = modal.querySelector("#checkbox_to_change_address");
-
-        checkbox.addEventListener('change', () => {
-            if (checkbox.checked) {
-                input_address.disabled = false;
-            } else {
-                input_address.disabled = false;
-            }
-        });
+        const checkbox_address_allow_change = modal.querySelector("#checkbox_to_change_address");
+        const checkbox_location_allow_cange = modal.querySelector("#checkbox_to_change_location");
 
         input_address.value = ip;
         input_description.value = description.textContent;
         input_user.value = user.textContent;
         input_pass.value = pass.textContent;
-        input_location.value = location.textContent;
+        input_location.disabled = true;
 
+        if (location.href) {
+            const path = location.href.split("/");
+            const id = path[path.length-1];
+            input_location.value = id;
+        } else {
+            input_location = 'empty';
+        }
+
+        checkbox_location_allow_cange.addEventListener('change', (tg) => {
+            const checkbox = tg.currentTarget;
+            if (checkbox.checked) {
+                input_location.disabled = false;
+            } else {
+                input_location.disabled = true;
+            }
+        });
+        
+        checkbox_address_allow_change.addEventListener('change', (tg) => {
+            const checkbox = tg.currentTarget;
+            if (checkbox.checked) {
+                input_address.disabled = false;
+            } else {
+                input_address.disabled = true;
+            }
+        });
         pop_over.hide();
         new bootstrap.Modal(modal).show();
 
@@ -87,7 +102,7 @@ const reserve_ip = (event) => {
                 send.description = input_description.value;
             }
 
-            if (location.textContent != input_location.value) {
+            if (checkbox_location_allow_cange.checked && location.textContent != input_location.value) {
                 send.rack = input_location.value;
             }
 
@@ -98,7 +113,7 @@ const reserve_ip = (event) => {
                 };
             }
 
-            if (input_address.value != ip && checkbox.checked) {
+            if (input_address.value != ip && checkbox_address_allow_change.checked) {
                 send.ip = input_address.value;
             }
             
@@ -183,7 +198,7 @@ document.getElementById("walk").addEventListener("click", async (event) => {
                 const svg = document.getElementById(`svg_${ip_}`);
                 if (resp.ping == 'Pong' && !svg.classList.contains('svg-online')) {
                     svg.classList = "svg-online";
-                } else if (resp.ping == 'Fail' && !svg.classList.contains('svg-unknown')) {
+                } else if (resp.ping == 'Fail' && svg.classList.contains('svg-online')) {
                     svg.classList = "svg-offline";
                 }
                 btn.style.animation = "";

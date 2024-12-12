@@ -23,7 +23,12 @@ use crate::{
 
 use super::RepositoryType;
 static TEMPLATES: LazyLock<Mutex<Tera>> =
-    LazyLock::new(|| Mutex::new(Tera::new("templates/**/*").expect("template dir doesn't found")));
+    LazyLock::new(|| Mutex::new({
+        let mut tera = Tera::new("templates/**/*").expect("template dir doesn't found");
+        tera.register_filter("truncate", filter::truncate_with_ellipsis);
+        tera.register_filter("find_uuid", filter::find_object_with_uuid);
+        tera
+    }));
 
 pub async fn login() -> impl IntoResponse {
     let tera = TEMPLATES.lock().await;
@@ -85,6 +90,8 @@ pub async fn http_view_devices(
         .await
         .unwrap_or_default();
 
+    
+
     if !devices.is_empty() {
         devices.sort_by_key(|x| x.ip);
     }
@@ -104,6 +111,7 @@ pub async fn http_view_devices(
     con.insert("username", &claim.username);
     con.insert("role", &claim.role);
     con.insert("ipv4", &network.first().map(|x| x.network.addr().is_ipv4()));
+    
 
     let tera = TEMPLATES.lock().await;
     Html(tera.render("index.html", &con).unwrap()).into_response()
@@ -162,19 +170,60 @@ pub async fn service(
         .get::<Service>(Some(condition))
         .await
         .unwrap_or_default();
-
-    ctx.insert("services", &service);
+    let services = state.get::<Services>(None).await.unwrap_or_default();
+    ctx.insert("service", &service);
+    ctx.insert("services", &services);
     ctx.insert("user_id", &claim.sub);
     ctx.insert("role", &claim.role);
     ctx.insert("username", &claim.username);
-
+    ctx.insert("block", "service");
+    
     let tera = TEMPLATES.lock().await;
-
+    
     Html(tera.render("index.html", &ctx).unwrap()).into_response()
 }
 
 pub(super) mod filter {
-    pub fn truncate_with_ellipsis() {
-        todo!()
+    use std::str::FromStr;
+    use super::HashMap;
+    use tera::{Value, Result};
+    
+    pub fn truncate_with_ellipsis(value: &Value, args: &HashMap<String, Value>) -> Result<Value> {
+        
+        if let Value::String(str) = value {
+            let length = args.get("length").and_then(Value::as_u64).unwrap_or(5) as usize;
+
+            let mut new = String::from_str(
+                if str.len() < length {
+                    &str[..]
+                } else {
+                    &str[..length]
+                }
+            ).unwrap();
+            new.push_str("...");
+
+            Ok(Value::String(new))
+
+        } else {
+            Err(format!("{value:?} is not a string").into())
+        }
+    }
+
+    pub fn find_object_with_uuid(value: &Value, args: &HashMap<String, Value>) -> Result<Value> {
+        if let Value::Array(obj) = value {
+            let key = args.get("key").and_then(|x|x.as_str()).unwrap();
+            let value = args.get("value").and_then(|x|x.as_str()).unwrap();
+
+            for element in obj {
+                if let Value::Object(e) = element {
+                    if let Some(e) = e.get(key).and_then(Value::as_str) {
+                        if e == value {
+                            return Ok(element.clone());
+                        }
+                    }
+                }
+            }
+        }
+        Ok(Value::Null)
     }
 }

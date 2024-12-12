@@ -83,21 +83,30 @@
                             clip-rule="evenodd" />
                     </svg>
                 </a>
-                <a type="button" class="link-dark link-offset-2 link-underline-opacity-25 link-underline-opacity-100-hover ms-1">{{ device.ip }}</a>
+                <a type="button" href="/service?ip={{device.ip}}&network_id={{network.id}}" class="link-dark link-offset-2 link-underline-opacity-25 link-underline-opacity-100-hover ms-1">{{ device.ip }}</a>
             </div>
-            <div data-bs-toggle="popover" data-bs-title="<p class='fw-bold text-center'>{{device.ip}}</p>"
+            <div tabindex="0" data-bs-trigger="focus" data-bs-toggle="popover" data-bs-title="<p class='fw-bold text-center'>{{device.ip}}</p>"
                 data-bs-content="
                         <div class='lh-sm'>
                             {% set location = device.location | default(value='empty') %}
                             <p><span class='font-monospace'>Status:</span> <span id='data_status' class='fw-bold {% if device.status == 'Online' %}text-online{% elif device.status == 'Offline' %}text-danger{% endif %}' id='status'>{{device.status}}</span></p>
                             <p><span class='font-monospace'>Description:</span> <span class='fw-bold' id='description'>{{device.description | default(value='empty')}}</span></p>
-                            <p><span class='font-monospace'>Location:</span> <span class='fw-bold' id='location' data-toggle='tooltip' title='{{location}}'>{% if location == 'empty' %}{{location}}{% else %}{{location}}{% endif %}</span></p>
+                            <p><span class='font-monospace'>Location:</span>
+                                {% if location == 'empty' %}
+                                    <span class='fw-bold' id='location'>{{location}}</span>
+                                {% else %}
+                                    <a role='button' href='{{location}}' id='location' class='link-dark link-offset-2 link-underline-opacity-25 link-underline-opacity-100-hover'>{{location | truncate}}</a>
+                                {% endif %}
+                            </p>
                             <p><span class='font-monospace'>Username:</span> {% set user = device.credential.username | default(value='Unknown') %} <span class='fw-bold' id='username'>{{user}}</span></p>
                             <p><span class='font-monospace'>Password:</span> {% set pass = device.credential.password | default(value='Unknown') %}<span class='fw-bold' id='password'>{{pass}}</span></p>
                             {% if role == 'Admin' %}
                                 <a role='button' class='btn btn-primary btn-sm' id='edit_device'>Edit</a>
-                            {% if device.status == 'Unknown' %}
-                                <a role='button' class='btn btn-light btn-sm ms-2' id='to_reserve'>Reserve</a>{% endif %}
+                                {% if device.status == 'Unknown' %}
+                                    <a role='button' class='btn btn-light btn-sm ms-2' id='to_reserve'>Reserve</a>
+                                {% elif device.status == 'Reserved' %}
+                                    <a role='button' class='btn btn-light btn-sm ms-2' id='unbook'>Unbook</a>
+                                {% endif %}
                             {% endif %}
                         </div>
                         " role="button">
@@ -125,12 +134,12 @@
                     </div>
                     <div class="modal-body">
 
-                        {% if subnet | length > 0 %}
+                        <!-- {% if subnet | length > 0 %}
                         <div class="input-group mb-3">
                             <span class="input-group-text" id="network_id_modal">id</span>
                             <input name="id" type="text" class="form-control" aria-describedby="network_id_modal" disabled>
                         </div>
-                        {% endif %}
+                        {% endif %} -->
 
                         <div class="input-group mb-3 align-items-center">
                             <span class="input-group-text">ip</span>
@@ -147,16 +156,18 @@
                                 aria-describedby="description_device">
                         </div>
 
-                        <div class="input-group mb-3">
+                        <div class="input-group mb-3 align-items-center">
                             <span class="input-group-text" id="device_location">location</span>
-                            <input name="location" type="text" class="form-control"
-                                aria-describedby="device_location">
+                            <input name="location" type="text" class="form-control" aria-describedby="device_location">
+                            <div class="form-check form-switch ms-2">
+                                <input class="form-check-input" type="checkbox" role="switch" id="checkbox_to_change_location">
+                                <label class="form-check-label" for="checkbox_to_change_location">Edit</label>
+                            </div>
                         </div>
 
                         <div class="input-group mb-3">
                             <span class="input-group-text" id="device_username">username</span>
-                            <input name="username" type="text" class="form-control"
-                                aria-describedby="device_username">
+                            <input name="username" type="text" class="form-control"aria-describedby="device_username">
                         </div>
 
                         <div class="input-group mb-3">
